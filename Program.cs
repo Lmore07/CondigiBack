@@ -1,5 +1,16 @@
+using CondigiBack.Contexts;
+using dotenv.net;
+using Microsoft.EntityFrameworkCore;
+using System;
+DotEnv.Load();
+
 var builder = WebApplication.CreateBuilder(args);
 
+//Create a connection string to the database
+var connectionString = Environment.GetEnvironmentVariable("PostgreDB");
+//Register service to the connection
+
+builder.Services.AddDbContext<AppDBContext>(options => options.UseNpgsql(connectionString));
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -10,11 +21,8 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
