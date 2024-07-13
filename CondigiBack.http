@@ -1,0 +1,6 @@
+@CondigiBack_HostAddress = http://localhost:5077
+
+GET {{CondigiBack_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
