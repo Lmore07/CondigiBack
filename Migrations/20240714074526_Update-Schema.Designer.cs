@@ -3,6 +3,7 @@ using System;
 using CondigiBack.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CondigiBack.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    partial class AppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240714074526_Update-Schema")]
+    partial class UpdateSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,6 +63,9 @@ namespace CondigiBack.Migrations
                     b.Property<Guid>("CounterpartyId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("CounterpartyId1")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -99,7 +105,7 @@ namespace CondigiBack.Migrations
 
                     b.HasIndex("CounterpartyId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("CounterpartyId1");
 
                     b.ToTable("Contracts");
                 });
@@ -294,19 +300,17 @@ namespace CondigiBack.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CondigiBack.Models.User", "Counterparty")
-                        .WithMany()
-                        .HasForeignKey("CounterpartyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_Contracts_Users_Counterparty");
-
                     b.HasOne("CondigiBack.Models.User", "User")
                         .WithMany("Contracts")
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("CounterpartyId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_Contract_User");
+                        .IsRequired();
+
+                    b.HasOne("CondigiBack.Models.User", "Counterparty")
+                        .WithMany()
+                        .HasForeignKey("CounterpartyId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("ContractType");
 
