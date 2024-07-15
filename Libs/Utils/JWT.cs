@@ -16,9 +16,7 @@ namespace CondigiBack.Libs.Utils
 
             var userClaims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Role, user.UserType.ToString())
             };
 
@@ -30,7 +28,7 @@ namespace CondigiBack.Libs.Utils
                 issuer: "CondigiBack",
                 audience: "CondigiBack",
                 claims: userClaims,
-                expires: DateTime.UtcNow.AddMinutes(5),
+                expires: DateTime.UtcNow.AddMinutes(1),
                 signingCredentials: credentials
             );
             return new JwtSecurityTokenHandler().WriteToken(jwtConfig);

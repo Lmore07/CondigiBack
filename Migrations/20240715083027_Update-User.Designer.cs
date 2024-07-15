@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CondigiBack.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    [Migration("20240714074526_Update-Schema")]
-    partial class UpdateSchema
+    [Migration("20240715083027_Update-User")]
+    partial class UpdateUser
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -63,9 +63,6 @@ namespace CondigiBack.Migrations
                     b.Property<Guid>("CounterpartyId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CounterpartyId1")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -105,7 +102,7 @@ namespace CondigiBack.Migrations
 
                     b.HasIndex("CounterpartyId");
 
-                    b.HasIndex("CounterpartyId1");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Contracts");
                 });
@@ -173,14 +170,10 @@ namespace CondigiBack.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -194,21 +187,17 @@ namespace CondigiBack.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("ParishId")
+                    b.Property<int?>("ParishId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("Status")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -240,11 +229,8 @@ namespace CondigiBack.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -260,11 +246,8 @@ namespace CondigiBack.Migrations
                     b.Property<bool>("Status")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
 
                     b.Property<int>("UserType")
                         .HasColumnType("integer");
@@ -300,17 +283,19 @@ namespace CondigiBack.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CondigiBack.Models.User", "User")
-                        .WithMany("Contracts")
-                        .HasForeignKey("CounterpartyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("CondigiBack.Models.User", "Counterparty")
                         .WithMany()
-                        .HasForeignKey("CounterpartyId1")
+                        .HasForeignKey("CounterpartyId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_Contracts_Users_Counterparty");
+
+                    b.HasOne("CondigiBack.Models.User", "User")
+                        .WithMany("Contracts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_Contract_User");
 
                     b.Navigation("ContractType");
 
@@ -334,9 +319,7 @@ namespace CondigiBack.Migrations
                 {
                     b.HasOne("CondigiBack.Models.Parish", "Parish")
                         .WithMany("Persons")
-                        .HasForeignKey("ParishId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ParishId");
 
                     b.Navigation("Parish");
                 });

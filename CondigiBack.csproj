@@ -27,10 +27,4 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Modules\Auth\Controllers\" />
-    <Folder Include="Modules\Auth\DTOs\" />
-    <Folder Include="Modules\Auth\Services\" />
-  </ItemGroup>
-
 </Project>

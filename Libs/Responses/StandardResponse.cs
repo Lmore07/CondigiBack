@@ -5,6 +5,8 @@ namespace CondigiBack.Libs.Responses
 {
     public class StandardResponse<T> : GeneralResponse<T>
     {
+        [JsonIgnore]
+        public List<string>? Errors { get; set; }
         public T Data { get; set; }
         public string Message { get; set; }
         public int StatusCode { get; set; }

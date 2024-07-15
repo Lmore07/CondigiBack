@@ -1,5 +1,9 @@
-﻿using CondigiBack.Models;
+﻿using CondigiBack.Libs.Enums;
+using CondigiBack.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure.Internal;
+using Npgsql;
 
 namespace CondigiBack.Contexts
 {
@@ -58,11 +62,18 @@ namespace CondigiBack.Contexts
                 .HasKey(p => p.Id);
 
             // USER
-
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Person)
                 .WithOne(p => p.User)
                 .HasForeignKey<User>(u => u.PersonId);
+
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
+
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Username)
+                .IsUnique();
 
             // CONTRACT
 

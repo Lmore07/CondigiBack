@@ -1,13 +1,16 @@
 using CondigiBack.Contexts;
 using CondigiBack.Libs.Middleware;
+using CondigiBack.Libs.Responses;
 using CondigiBack.Libs.Utils;
+using CondigiBack.Modules.Auth.Services;
 using CondigiBack.Modules.Geography.Services;
 using dotenv.net;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Claims;
+using System.Net;
 using System.Text;
 
 DotEnv.Load();
@@ -44,25 +47,35 @@ builder.Services.AddAuthentication(config =>
         ValidIssuer = "CondigiBack",
         ValidAudience = "CondigiBack",
         ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("KEY_JWT")))
     };
 }
 );
 
-//Roles
-builder.Services.AddAuthorization(config =>
-{
-    config.AddPolicy("Admin", policy => policy.RequireClaim(ClaimTypes.Role, "Admin"));
-    config.AddPolicy("User", policy => policy.RequireClaim(ClaimTypes.Role, "User"));
-});
-
 // Add services to the container.
 builder.Services.AddScoped<GeographyService>();
-
+builder.Services.AddScoped<AuthService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState.Values.SelectMany(e => e.Errors.Select(er => er.ErrorMessage)).ToList();
+        
+        var errorResponse = new BadRequestResponse<object>
+        {
+            StatusCode = (int)HttpStatusCode.BadRequest,
+            Error = "Se han encontrado errores de validación.",
+            Errors = errors
+        };
+        return new BadRequestObjectResult(errorResponse);
+    };
+});
 
 var app = builder.Build();
 

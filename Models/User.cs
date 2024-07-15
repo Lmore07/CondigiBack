@@ -25,14 +25,10 @@ namespace CondigiBack.Models
         
         public bool Status { get; set; }
         
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
+                
+        public DateTime? UpdatedAt { get; set; }
         
-        public Guid? CreatedBy { get; set; }
-        
-        public DateTime UpdatedAt { get; set; }
-        
-        public Guid? UpdatedBy { get; set; }
-
         public Person Person { get; set; }
 
         public ICollection<Contract> Contracts { get; set; }

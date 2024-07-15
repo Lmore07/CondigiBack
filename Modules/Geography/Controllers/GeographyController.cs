@@ -2,13 +2,15 @@
 using CondigiBack.Modules.Geography.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi.Models;
+using System.Security.Permissions;
 using static CondigiBack.Modules.Geography.DTOs.GeographyDTO;
 
 namespace CondigiBack.Modules.Geography.Controllers
 {
     [Route("api/geography")]
-    [ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status401Unauthorized)]
     [Produces("application/json")]
+    [ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status500InternalServerError)]
     [ApiController]
     public class GeographyController : ControllerBase
     {

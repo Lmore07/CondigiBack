@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CondigiBack.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateSchema : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -123,9 +123,7 @@ namespace CondigiBack.Migrations
                     UserType = table.Column<int>(type: "integer", nullable: false),
                     Status = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -156,12 +154,17 @@ namespace CondigiBack.Migrations
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
-                    CounterpartyId1 = table.Column<Guid>(type: "uuid", nullable: false)
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Contracts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Contract_User",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Contracts_ContractTypes_ContractTypeId",
                         column: x => x.ContractTypeId,
@@ -169,14 +172,8 @@ namespace CondigiBack.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Contracts_Users_CounterpartyId",
+                        name: "FK_Contracts_Users_Counterparty",
                         column: x => x.CounterpartyId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Contracts_Users_CounterpartyId1",
-                        column: x => x.CounterpartyId1,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -198,9 +195,9 @@ namespace CondigiBack.Migrations
                 column: "CounterpartyId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Contracts_CounterpartyId1",
+                name: "IX_Contracts_UserId",
                 table: "Contracts",
-                column: "CounterpartyId1");
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Parishes_CantonId",
@@ -226,10 +223,10 @@ namespace CondigiBack.Migrations
                 name: "Contracts");
 
             migrationBuilder.DropTable(
-                name: "ContractTypes");
+                name: "Users");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "ContractTypes");
 
             migrationBuilder.DropTable(
                 name: "Persons");

@@ -6,5 +6,7 @@
         string Message { get; set; }
         int StatusCode { get; set; }
         string? Error { get; set; }
+        List<string>? Errors { get; set; }
+
     }
 }

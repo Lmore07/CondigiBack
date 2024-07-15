@@ -6,6 +6,9 @@ namespace CondigiBack.Libs.Responses
     public class PaginatedResponse<T> : GeneralResponse<IEnumerable<T>>
     {
         public Pagination Pagination { get; set; }
+
+        [JsonIgnore]
+        public List<string>? Errors { get; set; }
         public IEnumerable<T> Data { get; set; }
         public string Message { get; set; }
         public int StatusCode { get; set; }
