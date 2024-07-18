@@ -24,6 +24,7 @@ namespace CondigiBack.Modules.Companies.Controllers
         }
 
         [ProducesResponseType<StandardResponse<List<UsersByCompanyResponseDTO>>>(StatusCodes.Status200OK)]
+        [EndpointSummary("Get all users by company")]
         [HttpGet("users/{companyId}")]
         public async Task<IActionResult> GetUsersByCompany(Guid companyId)
         {
