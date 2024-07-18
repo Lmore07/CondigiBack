@@ -2,8 +2,7 @@
 {
     public enum UserTypeEnum
     {
-        DEVELOPER=1,
-        USER=2,
-        ADMIN=3
+        OWNER=0,
+        REVIEVER=1,
     }
 }

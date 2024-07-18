@@ -44,6 +44,39 @@ namespace CondigiBack.Migrations
                     b.ToTable("Cantons");
                 });
 
+            modelBuilder.Entity("CondigiBack.Models.Company", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Companies");
+                });
+
             modelBuilder.Entity("CondigiBack.Models.Contract", b =>
                 {
                     b.Property<Guid>("Id")
@@ -57,14 +90,15 @@ namespace CondigiBack.Migrations
                     b.Property<Guid>("ContractTypeId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CounterpartyId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("EncryptionKey")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("timestamp with time zone");
@@ -75,14 +109,14 @@ namespace CondigiBack.Migrations
                     b.Property<decimal>("PaymentAmount")
                         .HasColumnType("decimal(10, 2)");
 
-                    b.Property<int>("PaymentFrequency")
+                    b.Property<int?>("PaymentFrequency")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("Status")
-                        .HasColumnType("boolean");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -90,18 +124,44 @@ namespace CondigiBack.Migrations
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uuid");
 
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContractTypeId");
+
+                    b.ToTable("Contracts");
+                });
+
+            modelBuilder.Entity("CondigiBack.Models.ContractParticipant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ContracId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ContractTypeId");
+                    b.HasIndex("CompanyId");
 
-                    b.HasIndex("CounterpartyId");
+                    b.HasIndex("ContracId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Contracts");
+                    b.ToTable("ContractParticipants");
                 });
 
             modelBuilder.Entity("CondigiBack.Models.ContractType", b =>
@@ -267,6 +327,33 @@ namespace CondigiBack.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("CondigiBack.Models.UserCompanies", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RoleInCompany")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserCompanies");
+                });
+
             modelBuilder.Entity("CondigiBack.Models.Canton", b =>
                 {
                     b.HasOne("CondigiBack.Models.Province", "Province")
@@ -286,23 +373,30 @@ namespace CondigiBack.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CondigiBack.Models.User", "Counterparty")
-                        .WithMany()
-                        .HasForeignKey("CounterpartyId")
+                    b.Navigation("ContractType");
+                });
+
+            modelBuilder.Entity("CondigiBack.Models.ContractParticipant", b =>
+                {
+                    b.HasOne("CondigiBack.Models.Company", "Company")
+                        .WithMany("ContractParticipants")
+                        .HasForeignKey("CompanyId");
+
+                    b.HasOne("CondigiBack.Models.Contract", "Contract")
+                        .WithMany("ContractParticipants")
+                        .HasForeignKey("ContracId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_Contracts_Users_Counterparty");
+                        .IsRequired();
 
                     b.HasOne("CondigiBack.Models.User", "User")
-                        .WithMany("Contracts")
+                        .WithMany("ContractParticipants")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_Contract_User");
+                        .IsRequired();
 
-                    b.Navigation("ContractType");
+                    b.Navigation("Company");
 
-                    b.Navigation("Counterparty");
+                    b.Navigation("Contract");
 
                     b.Navigation("User");
                 });
@@ -338,9 +432,40 @@ namespace CondigiBack.Migrations
                     b.Navigation("Person");
                 });
 
+            modelBuilder.Entity("CondigiBack.Models.UserCompanies", b =>
+                {
+                    b.HasOne("CondigiBack.Models.Company", "Company")
+                        .WithMany("UserCompanies")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CondigiBack.Models.User", "User")
+                        .WithMany("UserCompanies")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("CondigiBack.Models.Canton", b =>
                 {
                     b.Navigation("Parishes");
+                });
+
+            modelBuilder.Entity("CondigiBack.Models.Company", b =>
+                {
+                    b.Navigation("ContractParticipants");
+
+                    b.Navigation("UserCompanies");
+                });
+
+            modelBuilder.Entity("CondigiBack.Models.Contract", b =>
+                {
+                    b.Navigation("ContractParticipants");
                 });
 
             modelBuilder.Entity("CondigiBack.Models.ContractType", b =>
@@ -366,7 +491,9 @@ namespace CondigiBack.Migrations
 
             modelBuilder.Entity("CondigiBack.Models.User", b =>
                 {
-                    b.Navigation("Contracts");
+                    b.Navigation("ContractParticipants");
+
+                    b.Navigation("UserCompanies");
                 });
 #pragma warning restore 612, 618
         }

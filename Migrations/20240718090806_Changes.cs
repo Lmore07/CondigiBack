@@ -7,11 +7,29 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CondigiBack.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class Changes : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Companies",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    Status = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Companies", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "ContractTypes",
                 columns: table => new
@@ -41,6 +59,36 @@ namespace CondigiBack.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Provinces", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Contracts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ContractTypeId = table.Column<Guid>(type: "uuid", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    NumClauses = table.Column<int>(type: "integer", nullable: false),
+                    PaymentAmount = table.Column<decimal>(type: "numeric(10,2)", nullable: false),
+                    PaymentFrequency = table.Column<int>(type: "integer", nullable: true),
+                    Content = table.Column<string>(type: "text", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    EncryptionKey = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Contracts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Contracts_ContractTypes_ContractTypeId",
+                        column: x => x.ContractTypeId,
+                        principalTable: "ContractTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -91,14 +139,12 @@ namespace CondigiBack.Migrations
                     FirstName = table.Column<string>(type: "text", nullable: false),
                     LastName = table.Column<string>(type: "text", nullable: false),
                     Identification = table.Column<string>(type: "text", nullable: false),
-                    Phone = table.Column<string>(type: "text", nullable: false),
-                    ParishId = table.Column<int>(type: "integer", nullable: false),
-                    Address = table.Column<string>(type: "text", nullable: false),
+                    Phone = table.Column<string>(type: "text", nullable: true),
+                    ParishId = table.Column<int>(type: "integer", nullable: true),
+                    Address = table.Column<string>(type: "text", nullable: true),
                     Status = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -107,8 +153,7 @@ namespace CondigiBack.Migrations
                         name: "FK_Persons_Parishes_ParishId",
                         column: x => x.ParishId,
                         principalTable: "Parishes",
-                        principalColumn: "IdParish",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "IdParish");
                 });
 
             migrationBuilder.CreateTable(
@@ -122,8 +167,8 @@ namespace CondigiBack.Migrations
                     Email = table.Column<string>(type: "text", nullable: false),
                     UserType = table.Column<int>(type: "integer", nullable: false),
                     Status = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -137,43 +182,60 @@ namespace CondigiBack.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Contracts",
+                name: "ContractParticipants",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ContractTypeId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ContracId = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CounterpartyId = table.Column<Guid>(type: "uuid", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    NumClauses = table.Column<int>(type: "integer", nullable: false),
-                    PaymentAmount = table.Column<decimal>(type: "numeric(10,2)", nullable: false),
-                    PaymentFrequency = table.Column<int>(type: "integer", nullable: false),
-                    Content = table.Column<string>(type: "text", nullable: false),
-                    Status = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true)
+                    CompanyId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Role = table.Column<int>(type: "integer", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Contracts", x => x.Id);
+                    table.PrimaryKey("PK_ContractParticipants", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Contract_User",
+                        name: "FK_ContractParticipants_Companies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Companies",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ContractParticipants_Contracts_ContracId",
+                        column: x => x.ContracId,
+                        principalTable: "Contracts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ContractParticipants_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserCompanies",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CompanyId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RoleInCompany = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserCompanies", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Contracts_ContractTypes_ContractTypeId",
-                        column: x => x.ContractTypeId,
-                        principalTable: "ContractTypes",
+                        name: "FK_UserCompanies_Companies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Companies",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Contracts_Users_Counterparty",
-                        column: x => x.CounterpartyId,
+                        name: "FK_UserCompanies_Users_UserId",
+                        column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -185,19 +247,24 @@ namespace CondigiBack.Migrations
                 column: "ProvinceId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ContractParticipants_CompanyId",
+                table: "ContractParticipants",
+                column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContractParticipants_ContracId",
+                table: "ContractParticipants",
+                column: "ContracId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContractParticipants_UserId",
+                table: "ContractParticipants",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Contracts_ContractTypeId",
                 table: "Contracts",
                 column: "ContractTypeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Contracts_CounterpartyId",
-                table: "Contracts",
-                column: "CounterpartyId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Contracts_UserId",
-                table: "Contracts",
-                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Parishes_CantonId",
@@ -210,9 +277,31 @@ namespace CondigiBack.Migrations
                 column: "ParishId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserCompanies_CompanyId",
+                table: "UserCompanies",
+                column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserCompanies_UserId",
+                table: "UserCompanies",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Email",
+                table: "Users",
+                column: "Email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_PersonId",
                 table: "Users",
                 column: "PersonId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Username",
+                table: "Users",
+                column: "Username",
                 unique: true);
         }
 
@@ -220,7 +309,16 @@ namespace CondigiBack.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "ContractParticipants");
+
+            migrationBuilder.DropTable(
+                name: "UserCompanies");
+
+            migrationBuilder.DropTable(
                 name: "Contracts");
+
+            migrationBuilder.DropTable(
+                name: "Companies");
 
             migrationBuilder.DropTable(
                 name: "Users");

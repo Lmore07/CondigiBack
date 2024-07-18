@@ -1,9 +1,5 @@
-﻿using CondigiBack.Libs.Enums;
-using CondigiBack.Models;
+﻿using CondigiBack.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure.Internal;
-using Npgsql;
 
 namespace CondigiBack.Contexts
 {
@@ -21,6 +17,9 @@ namespace CondigiBack.Contexts
         public DbSet<Province> Provinces { get; set; }
         public DbSet<Canton> Cantons { get; set; }
         public DbSet<Parish> Parishes { get; set; }
+        public DbSet<Company> Companies { get; set; }
+        public DbSet<ContractParticipant> ContractParticipants { get; set; }
+        public DbSet<UserCompanies> UserCompanies { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -81,18 +80,6 @@ namespace CondigiBack.Contexts
                .HasKey(c => c.Id);
 
             modelBuilder.Entity<Contract>()
-                .HasOne(c => c.User)
-                .WithMany(u => u.Contracts)
-                .HasForeignKey(c => c.UserId)
-                .HasConstraintName("FK_Contract_User");
-
-            modelBuilder.Entity<Contract>()
-                .HasOne(c => c.Counterparty)
-                .WithMany()
-                .HasForeignKey(c => c.CounterpartyId)
-                .HasConstraintName("FK_Contracts_Users_Counterparty");
-
-            modelBuilder.Entity<Contract>()
                 .HasOne(c => c.ContractType)
                 .WithMany(ct => ct.Contracts)
                 .HasForeignKey(c => c.ContractTypeId);
@@ -101,6 +88,49 @@ namespace CondigiBack.Contexts
 
             modelBuilder.Entity<ContractType>()
                 .HasKey(ct => ct.Id);
+
+            //COMPANY
+
+            modelBuilder.Entity<Company>()
+                .HasKey(c => c.Id);
+
+            //UserCompanies
+
+            modelBuilder.Entity<UserCompanies>()
+                .HasKey(uc => uc.Id);
+
+            modelBuilder.Entity<UserCompanies>()
+                .HasOne(uc => uc.Company)
+                .WithMany(c => c.UserCompanies)
+                .HasForeignKey(uc => uc.CompanyId);
+
+            modelBuilder.Entity<UserCompanies>()
+                .HasOne(uc => uc.User)
+                .WithMany(u => u.UserCompanies)
+                .HasForeignKey(u => u.UserId);
+
+            //Contract Participants
+
+            modelBuilder.Entity<ContractParticipant>()
+                .HasKey(c => c.Id);
+
+            //relacion con contratos
+            modelBuilder.Entity<ContractParticipant>()
+                .HasOne(cp => cp.Contract)
+                .WithMany(c => c.ContractParticipants)
+                .HasForeignKey(cp => cp.ContracId);
+
+            //relacion con usuarios
+            modelBuilder.Entity<ContractParticipant>()
+                .HasOne(cp => cp.User)
+                .WithMany(u => u.ContractParticipants)
+                .HasForeignKey(cp => cp.UserId);
+
+            //relacion con compañias (opcional)
+            modelBuilder.Entity<ContractParticipant>()
+                .HasOne(cp => cp.Company)
+                .WithMany(c => c.ContractParticipants)
+                .HasForeignKey(cp => cp.CompanyId);
         }
     }
 }

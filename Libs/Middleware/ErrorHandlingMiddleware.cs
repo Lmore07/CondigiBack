@@ -25,10 +25,18 @@ namespace CondigiBack.Libs.Middleware
                     context.Response.Clear();
                     context.Response.ContentType = "application/json";
                     context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    var errorResponse = new ErrorResponse<object>("Acceso denegado", "No autorizado", 401);
+                    var errorResponse = new ErrorResponse<object>("Debe tener un token de sesión", "No autorizado", 401);
                     var jsonResponse = JsonSerializer.Serialize(errorResponse);
                     await context.Response.WriteAsync(jsonResponse);
-                }                
+                }else if(context.Response.StatusCode == (int)HttpStatusCode.Forbidden)
+                {
+                    context.Response.Clear();
+                    context.Response.ContentType = "application/json";
+                    context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    var errorResponse = new ErrorResponse<object>("No tiene permisos para realizar esta acción", "Prohibido", 403);
+                    var jsonResponse = JsonSerializer.Serialize(errorResponse);
+                    await context.Response.WriteAsync(jsonResponse);
+                }
             }
             catch (Exception ex)
             {

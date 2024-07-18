@@ -31,6 +31,8 @@ namespace CondigiBack.Models
         
         public Person Person { get; set; }
 
-        public ICollection<Contract> Contracts { get; set; }
+        public ICollection<ContractParticipant> ContractParticipants { get; set; }
+        public ICollection<UserCompanies> UserCompanies { get; set; }
+
     }
 }

@@ -3,7 +3,9 @@ using CondigiBack.Libs.Middleware;
 using CondigiBack.Libs.Responses;
 using CondigiBack.Libs.Utils;
 using CondigiBack.Modules.Auth.Services;
+using CondigiBack.Modules.Companies.Services;
 using CondigiBack.Modules.Geography.Services;
+using CondigiBack.Modules.Users.Services;
 using dotenv.net;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -56,6 +58,8 @@ builder.Services.AddAuthentication(config =>
 // Add services to the container.
 builder.Services.AddScoped<GeographyService>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<CompanyService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
