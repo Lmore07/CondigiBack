@@ -10,6 +10,14 @@
             public bool Status { get; set; }
         }
 
+        public class AllCompanies
+        {
+            public Guid CompanyId { get; set; }
+            public string CompanyName { get; set; }
+            public string Description { get; set; }
+            public bool Status { get; set; }
+        }
+
         public class  UsersByCompanyResponseDTO
         {
             public Guid UserId { get; set; }

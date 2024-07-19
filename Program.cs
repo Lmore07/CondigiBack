@@ -103,7 +103,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
         var errorResponse = new BadRequestResponse<object>
         {
             StatusCode = (int)HttpStatusCode.BadRequest,
-            Error = "Se han encontrado errores de validaci�n.",
+            Error = "Se han encontrado errores de validación.",
             Errors = errors
         };
         return new BadRequestObjectResult(errorResponse);
@@ -125,7 +125,6 @@ app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseCors("AllowedHosts");
 
 app.UseAuthorization();
-app.UseAuthentication();
 app.MapControllers();
 
 app.Run();

@@ -44,5 +44,35 @@ namespace CondigiBack.Modules.Companies.Services
 
             return new StandardResponse<List<UsersByCompanyResponseDTO>>(usersResponse,"Usuarios encontrados",StatusCodes.Status200OK);
         }
+
+        public async Task<GeneralResponse<List<AllCompanies>>> GetCompanies(int currentPage, int pageSize)
+        {
+            var companies = await _dbContext.Companies
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var totalCount = await _dbContext.Companies.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+            var paginationInfo = new Pagination(currentPage, totalPages, pageSize, totalCount);
+            var companiesResponse = companies.Select(c => new AllCompanies
+            {
+                CompanyId = c.Id,
+                CompanyName = c.Name,
+                Description = c.Description,
+                Status = c.Status
+            }).ToList();
+
+            if(companiesResponse.Count == 0)
+            {
+                return new ErrorResponse<List<AllCompanies>>
+                {
+                    StatusCode = StatusCodes.Status404NotFound,
+                    Message = "No se encontraron compañias"
+                };
+            }
+
+            return new PaginatedResponse<List<AllCompanies>>(companiesResponse, StatusCodes.Status200OK, "Compañias encontradas", paginationInfo);
+        }
     }
 }
