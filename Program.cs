@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Net;
 using System.Text;
+using Microsoft.OpenApi.Models;
 
 DotEnv.Load();
 
@@ -63,7 +64,35 @@ builder.Services.AddScoped<CompanyService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Condigi API", Version = "v1" });
+
+    // Definir el esquema de seguridad para usar tokens Bearer
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Por favor, inserta el token con 'Bearer ' antes del token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey
+    });
+
+    // Aplicar el filtro de seguridad
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
@@ -74,7 +103,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
         var errorResponse = new BadRequestResponse<object>
         {
             StatusCode = (int)HttpStatusCode.BadRequest,
-            Error = "Se han encontrado errores de validación.",
+            Error = "Se han encontrado errores de validaciï¿½n.",
             Errors = errors
         };
         return new BadRequestObjectResult(errorResponse);
@@ -96,7 +125,7 @@ app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseCors("AllowedHosts");
 
 app.UseAuthorization();
-
+app.UseAuthentication();
 app.MapControllers();
 
 app.Run();
