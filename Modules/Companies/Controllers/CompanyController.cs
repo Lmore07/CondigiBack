@@ -1,7 +1,6 @@
 ﻿using CondigiBack.Libs.Responses;
 using CondigiBack.Modules.Companies.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using static CondigiBack.Modules.Companies.DTOs.CompanyDTO;
 
