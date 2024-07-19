@@ -125,7 +125,6 @@ app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseCors("AllowedHosts");
 
 app.UseAuthorization();
-app.UseAuthentication();
 app.MapControllers();
 
 app.Run();
