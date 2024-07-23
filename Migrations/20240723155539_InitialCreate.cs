@@ -7,13 +7,13 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CondigiBack.Migrations
 {
     /// <inheritdoc />
-    public partial class Changes : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Companies",
+                name: "companies",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -27,11 +27,11 @@ namespace CondigiBack.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Companies", x => x.Id);
+                    table.PrimaryKey("PK_companies", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "ContractTypes",
+                name: "contract_types",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -45,11 +45,11 @@ namespace CondigiBack.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ContractTypes", x => x.Id);
+                    table.PrimaryKey("PK_contract_types", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Provinces",
+                name: "provinces",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -58,19 +58,19 @@ namespace CondigiBack.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Provinces", x => x.Id);
+                    table.PrimaryKey("PK_provinces", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Contracts",
+                name: "contracts",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     ContractTypeId = table.Column<Guid>(type: "uuid", nullable: false),
                     StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    NumClauses = table.Column<int>(type: "integer", nullable: false),
-                    PaymentAmount = table.Column<decimal>(type: "numeric(10,2)", nullable: false),
+                    NumClauses = table.Column<int>(type: "integer", nullable: true),
+                    PaymentAmount = table.Column<decimal>(type: "numeric(10,2)", nullable: true),
                     PaymentFrequency = table.Column<int>(type: "integer", nullable: true),
                     Content = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
@@ -82,17 +82,17 @@ namespace CondigiBack.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Contracts", x => x.Id);
+                    table.PrimaryKey("PK_contracts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Contracts_ContractTypes_ContractTypeId",
+                        name: "FK_contracts_contract_types_ContractTypeId",
                         column: x => x.ContractTypeId,
-                        principalTable: "ContractTypes",
+                        principalTable: "contract_types",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Cantons",
+                name: "cantons",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -102,17 +102,17 @@ namespace CondigiBack.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Cantons", x => x.Id);
+                    table.PrimaryKey("PK_cantons", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Cantons_Provinces_ProvinceId",
+                        name: "FK_cantons_provinces_ProvinceId",
                         column: x => x.ProvinceId,
-                        principalTable: "Provinces",
+                        principalTable: "provinces",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Parishes",
+                name: "parishes",
                 columns: table => new
                 {
                     IdParish = table.Column<int>(type: "integer", nullable: false)
@@ -122,17 +122,17 @@ namespace CondigiBack.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Parishes", x => x.IdParish);
+                    table.PrimaryKey("PK_parishes", x => x.IdParish);
                     table.ForeignKey(
-                        name: "FK_Parishes_Cantons_CantonId",
+                        name: "FK_parishes_cantons_CantonId",
                         column: x => x.CantonId,
-                        principalTable: "Cantons",
+                        principalTable: "cantons",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Persons",
+                name: "persons",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -148,16 +148,16 @@ namespace CondigiBack.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Persons", x => x.Id);
+                    table.PrimaryKey("PK_persons", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Persons_Parishes_ParishId",
+                        name: "FK_persons_parishes_ParishId",
                         column: x => x.ParishId,
-                        principalTable: "Parishes",
+                        principalTable: "parishes",
                         principalColumn: "IdParish");
                 });
 
             migrationBuilder.CreateTable(
-                name: "Users",
+                name: "users",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -172,17 +172,17 @@ namespace CondigiBack.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.PrimaryKey("PK_users", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Users_Persons_PersonId",
+                        name: "FK_users_persons_PersonId",
                         column: x => x.PersonId,
-                        principalTable: "Persons",
+                        principalTable: "persons",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "ContractParticipants",
+                name: "contract_participants",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -194,28 +194,28 @@ namespace CondigiBack.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ContractParticipants", x => x.Id);
+                    table.PrimaryKey("PK_contract_participants", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ContractParticipants_Companies_CompanyId",
+                        name: "FK_contract_participants_companies_CompanyId",
                         column: x => x.CompanyId,
-                        principalTable: "Companies",
+                        principalTable: "companies",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_ContractParticipants_Contracts_ContracId",
+                        name: "FK_contract_participants_contracts_ContracId",
                         column: x => x.ContracId,
-                        principalTable: "Contracts",
+                        principalTable: "contracts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ContractParticipants_Users_UserId",
+                        name: "FK_contract_participants_users_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
+                        principalTable: "users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserCompanies",
+                name: "user_companies",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -226,117 +226,126 @@ namespace CondigiBack.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserCompanies", x => x.Id);
+                    table.PrimaryKey("PK_user_companies", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UserCompanies_Companies_CompanyId",
+                        name: "FK_user_companies_companies_CompanyId",
                         column: x => x.CompanyId,
-                        principalTable: "Companies",
+                        principalTable: "companies",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UserCompanies_Users_UserId",
+                        name: "FK_user_companies_users_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
+                        principalTable: "users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Cantons_ProvinceId",
-                table: "Cantons",
+                name: "IX_cantons_ProvinceId",
+                table: "cantons",
                 column: "ProvinceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ContractParticipants_CompanyId",
-                table: "ContractParticipants",
+                name: "IX_contract_participants_CompanyId",
+                table: "contract_participants",
                 column: "CompanyId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ContractParticipants_ContracId",
-                table: "ContractParticipants",
+                name: "IX_contract_participants_ContracId",
+                table: "contract_participants",
                 column: "ContracId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ContractParticipants_UserId",
-                table: "ContractParticipants",
+                name: "IX_contract_participants_UserId",
+                table: "contract_participants",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Contracts_ContractTypeId",
-                table: "Contracts",
+                name: "IX_contracts_ContractTypeId",
+                table: "contracts",
                 column: "ContractTypeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Parishes_CantonId",
-                table: "Parishes",
+                name: "IX_parishes_CantonId",
+                table: "parishes",
                 column: "CantonId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Persons_ParishId",
-                table: "Persons",
+                name: "IX_persons_ParishId",
+                table: "persons",
                 column: "ParishId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserCompanies_CompanyId",
-                table: "UserCompanies",
+                name: "IX_user_companies_CompanyId",
+                table: "user_companies",
                 column: "CompanyId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserCompanies_UserId",
-                table: "UserCompanies",
+                name: "IX_user_companies_UserId",
+                table: "user_companies",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_Email",
-                table: "Users",
+                name: "IX_users_Email",
+                table: "users",
                 column: "Email",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_PersonId",
-                table: "Users",
+                name: "IX_users_PersonId",
+                table: "users",
                 column: "PersonId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_Username",
-                table: "Users",
+                name: "IX_users_Username",
+                table: "users",
                 column: "Username",
                 unique: true);
+            
+            var provinciesSql = System.IO.File.ReadAllText("Migrations/provincias.sql");
+            migrationBuilder.Sql(provinciesSql);
+            
+            var cantonsSql = System.IO.File.ReadAllText("Migrations/cantones.sql");
+            migrationBuilder.Sql(cantonsSql);
+            
+            var parishesSql = System.IO.File.ReadAllText("Migrations/parroquias.sql");
+            migrationBuilder.Sql(parishesSql);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ContractParticipants");
+                name: "contract_participants");
 
             migrationBuilder.DropTable(
-                name: "UserCompanies");
+                name: "user_companies");
 
             migrationBuilder.DropTable(
-                name: "Contracts");
+                name: "contracts");
 
             migrationBuilder.DropTable(
-                name: "Companies");
+                name: "companies");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "users");
 
             migrationBuilder.DropTable(
-                name: "ContractTypes");
+                name: "contract_types");
 
             migrationBuilder.DropTable(
-                name: "Persons");
+                name: "persons");
 
             migrationBuilder.DropTable(
-                name: "Parishes");
+                name: "parishes");
 
             migrationBuilder.DropTable(
-                name: "Cantons");
+                name: "cantons");
 
             migrationBuilder.DropTable(
-                name: "Provinces");
+                name: "provinces");
         }
     }
 }

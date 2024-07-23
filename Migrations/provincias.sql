@@ -1,4 +1,4 @@
-INSERT INTO Provinces VALUES 
+INSERT INTO provinces VALUES 
   (1, 'Azuay'),
   (2, 'Bolívar'),
   (3, 'Cañar'),

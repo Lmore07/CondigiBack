@@ -1,4 +1,4 @@
-INSERT INTO Parishes VALUES 
+INSERT INTO parishes VALUES 
   (1, 'Bellavista', 1),
   (2, 'Cañaribamba', 1),
   (3, 'El Batán', 1),

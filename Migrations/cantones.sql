@@ -1,4 +1,4 @@
-INSERT INTO Cantons VALUES 
+INSERT INTO cantons VALUES 
   (1, 'Cuenca', 1),
   (2, 'Girón', 1),
   (3, 'Gualaceo', 1),

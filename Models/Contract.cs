@@ -4,6 +4,7 @@ using CondigiBack.Libs.Enums;
 
 namespace CondigiBack.Models
 {
+    [Table("contracts")]
     public class Contract
     {
         [Key]
