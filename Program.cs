@@ -30,6 +30,17 @@ builder.Services.AddDbContext<AppDBContext>(options => options.UseNpgsql(connect
 builder.Services.AddSingleton<JWT>();
 builder.Services.AddSingleton<Encrypt>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "MyAllowSpecificOrigins",
+                      builder =>
+                      {
+                          builder.WithOrigins("http://localhost:3000")
+                                 .AllowAnyHeader()
+                                 .AllowAnyMethod();
+                      });
+});
+
 //Configure JWT Authentication and Authorization
 builder.Services.AddAuthentication(config =>
 {
@@ -122,7 +133,7 @@ app.UseHttpsRedirection();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
 //CORS
-app.UseCors("AllowedHosts");
+app.UseCors("MyAllowSpecificOrigins");
 
 app.UseAuthorization();
 app.MapControllers();
