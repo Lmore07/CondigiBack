@@ -29,6 +29,7 @@ namespace CondigiBack.Contexts
 
             modelBuilder.Entity<Province>()
                 .HasKey(p => p.Id);
+                
 
             // CANTON
 

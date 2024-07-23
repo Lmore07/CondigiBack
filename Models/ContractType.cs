@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CondigiBack.Models
 {
+    [Table("contract_types")]
     public class ContractType
     {
         [Key]

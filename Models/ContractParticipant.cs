@@ -1,8 +1,10 @@
 ﻿using CondigiBack.Libs.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CondigiBack.Models
 {
+    [Table("contract_participants")]
     public class ContractParticipant
     {
         [Key]

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CondigiBack.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    [Migration("20240718090806_Changes")]
-    partial class Changes
+    [Migration("20240723155539_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -44,7 +44,7 @@ namespace CondigiBack.Migrations
 
                     b.HasIndex("ProvinceId");
 
-                    b.ToTable("Cantons");
+                    b.ToTable("cantons");
                 });
 
             modelBuilder.Entity("CondigiBack.Models.Company", b =>
@@ -77,7 +77,7 @@ namespace CondigiBack.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Companies");
+                    b.ToTable("companies");
                 });
 
             modelBuilder.Entity("CondigiBack.Models.Contract", b =>
@@ -106,10 +106,10 @@ namespace CondigiBack.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("NumClauses")
+                    b.Property<int?>("NumClauses")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("PaymentAmount")
+                    b.Property<decimal?>("PaymentAmount")
                         .HasColumnType("decimal(10, 2)");
 
                     b.Property<int?>("PaymentFrequency")
@@ -131,7 +131,7 @@ namespace CondigiBack.Migrations
 
                     b.HasIndex("ContractTypeId");
 
-                    b.ToTable("Contracts");
+                    b.ToTable("contracts");
                 });
 
             modelBuilder.Entity("CondigiBack.Models.ContractParticipant", b =>
@@ -164,7 +164,7 @@ namespace CondigiBack.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ContractParticipants");
+                    b.ToTable("contract_participants");
                 });
 
             modelBuilder.Entity("CondigiBack.Models.ContractType", b =>
@@ -198,7 +198,7 @@ namespace CondigiBack.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ContractTypes");
+                    b.ToTable("contract_types");
                 });
 
             modelBuilder.Entity("CondigiBack.Models.Parish", b =>
@@ -220,7 +220,7 @@ namespace CondigiBack.Migrations
 
                     b.HasIndex("CantonId");
 
-                    b.ToTable("Parishes");
+                    b.ToTable("parishes");
                 });
 
             modelBuilder.Entity("CondigiBack.Models.Person", b =>
@@ -263,7 +263,7 @@ namespace CondigiBack.Migrations
 
                     b.HasIndex("ParishId");
 
-                    b.ToTable("Persons");
+                    b.ToTable("persons");
                 });
 
             modelBuilder.Entity("CondigiBack.Models.Province", b =>
@@ -280,7 +280,7 @@ namespace CondigiBack.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Provinces");
+                    b.ToTable("provinces");
                 });
 
             modelBuilder.Entity("CondigiBack.Models.User", b =>
@@ -327,7 +327,7 @@ namespace CondigiBack.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("users");
                 });
 
             modelBuilder.Entity("CondigiBack.Models.UserCompanies", b =>
@@ -354,7 +354,7 @@ namespace CondigiBack.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserCompanies");
+                    b.ToTable("user_companies");
                 });
 
             modelBuilder.Entity("CondigiBack.Models.Canton", b =>
