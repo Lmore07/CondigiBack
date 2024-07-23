@@ -16,10 +16,10 @@ namespace CondigiBack.Models
         
         public DateTime EndDate { get; set; }
         
-        public int NumClauses { get; set; }
+        public int? NumClauses { get; set; }
         
         [Column(TypeName = "decimal(10, 2)")]
-        public decimal PaymentAmount { get; set; }
+        public decimal? PaymentAmount { get; set; }
         
         public PaymentFrequencyEnum? PaymentFrequency { get; set; }
 
