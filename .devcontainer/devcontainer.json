@@ -17,14 +17,15 @@
 	// }
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "dotnet restore",
+	"postCreateCommand": "dotnet tool install --global dotnet-ef",
 
 	// Configure tool-specific properties.
 	"customizations": {"vscode": {"extensions": [
 		"dbaeumer.vscode-eslint", 
 		"github.copilot", 
 		"mhutchie.git-graph",
-		"ms-dotnettools.vscode-dotnet-pack"
+		"ms-dotnettools.vscode-dotnet-pack",
+		"cweijan.vscode-database-client2"
 	]}}
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
