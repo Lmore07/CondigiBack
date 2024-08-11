@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Net;
 using System.Text;
+using CondigiBack.Modules.Contracts.Services;
 using Microsoft.OpenApi.Models;
 
 DotEnv.Load();
@@ -23,6 +24,7 @@ var builder = WebApplication.CreateBuilder(args);
 //Create a connection string to the database
 var connectionString = Environment.GetEnvironmentVariable("PostgreDB");
 
+
 //Register service to the connection
 builder.Services.AddDbContext<AppDBContext>(options => options.UseNpgsql(connectionString));
 
@@ -30,41 +32,45 @@ builder.Services.AddDbContext<AppDBContext>(options => options.UseNpgsql(connect
 builder.Services.AddSingleton<JWT>();
 builder.Services.AddSingleton<Encrypt>();
 
+// Generate and store the IV key at application startup
+Encrypt.GenerateRandomIv();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: "MyAllowSpecificOrigins",
-                      builder =>
-                      {
-                          builder.WithOrigins("http://localhost:4200")
-                                 .AllowAnyHeader()
-                                 .AllowAnyMethod();
-                      });
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
 });
 
 //Configure JWT Authentication and Authorization
 builder.Services.AddAuthentication(config =>
-{
-    config = new AuthenticationOptions()
     {
-        DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme,
-        DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme
-    };
-}
+        config = new AuthenticationOptions()
+        {
+            DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme,
+            DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme
+        };
+    }
 ).AddJwtBearer(config =>
-{
-    config.RequireHttpsMetadata = false;
-    config.SaveToken = true;
-    config.TokenValidationParameters = new TokenValidationParameters()
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidIssuer = "CondigiBack",
-        ValidAudience = "CondigiBack",
-        ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("KEY_JWT")))
-    };
-}
+        config.RequireHttpsMetadata = false;
+        config.SaveToken = true;
+        config.TokenValidationParameters = new TokenValidationParameters()
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidIssuer = "CondigiBack",
+            ValidAudience = "CondigiBack",
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero,
+            IssuerSigningKey =
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("KEY_JWT")))
+        };
+    }
 );
 
 // Add services to the container.
@@ -72,6 +78,8 @@ builder.Services.AddScoped<GeographyService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<CompanyService>();
+builder.Services.AddScoped<ContractService>();
+builder.Services.AddScoped<ContractTypeService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -100,7 +108,7 @@ builder.Services.AddSwaggerGen(options =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            new string[] { }
         }
     });
 });
@@ -110,7 +118,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     options.InvalidModelStateResponseFactory = context =>
     {
         var errors = context.ModelState.Values.SelectMany(e => e.Errors.Select(er => er.ErrorMessage)).ToList();
-        
+
         var errorResponse = new BadRequestResponse<object>
         {
             StatusCode = (int)HttpStatusCode.BadRequest,
