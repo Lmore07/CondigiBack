@@ -28,7 +28,7 @@ namespace CondigiBack.Libs.Utils
                 issuer: "CondigiBack",
                 audience: "CondigiBack",
                 claims: userClaims,
-                expires: DateTime.UtcNow.AddMinutes(10),
+                expires: DateTime.UtcNow.AddMinutes(60),
                 signingCredentials: credentials
             );
             return new JwtSecurityTokenHandler().WriteToken(jwtConfig);

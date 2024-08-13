@@ -119,7 +119,7 @@ namespace CondigiBack.Contexts
             modelBuilder.Entity<ContractParticipant>()
                 .HasOne(cp => cp.Contract)
                 .WithMany(c => c.ContractParticipants)
-                .HasForeignKey(cp => cp.ContracId);
+                .HasForeignKey(cp => cp.ContractId);
 
             //relacion con usuarios
             modelBuilder.Entity<ContractParticipant>()
@@ -132,6 +132,14 @@ namespace CondigiBack.Contexts
                 .HasOne(cp => cp.Company)
                 .WithMany(c => c.ContractParticipants)
                 .HasForeignKey(cp => cp.CompanyId);
+            
+            modelBuilder.Entity<AIRequest>()
+                .HasKey(ai => ai.Id);
+            
+            modelBuilder.Entity<AIRequest>()
+                .HasOne(ai => ai.Contract)
+                .WithMany(c=> c.AiRequests)
+                .HasForeignKey(ai => ai.ContractId);
         }
     }
 }

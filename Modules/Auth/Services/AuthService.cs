@@ -40,48 +40,46 @@ namespace CondigiBack.Modules.Auth.Services
                 return new ErrorResponse<bool>("El correo ya existe", "Correo duplicado", 404);
             }
 
-            using (var transaction = await _context.Database.BeginTransactionAsync())
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                try
+                var person = new Person
                 {
-                    var person = new Person
-                    {
-                        FirstName = userRequest.Person.FirstName,
-                        LastName = userRequest.Person.LastName,
-                        Identification = userRequest.Person.Identification,
-                        Phone = userRequest.Person.Phone,
-                        ParishId = userRequest.Person.ParishId,
-                        Address = userRequest.Person.Address,
-                        Status = true,
-                        CreatedAt = DateTime.UtcNow
-                    };
+                    FirstName = userRequest.Person.FirstName,
+                    LastName = userRequest.Person.LastName,
+                    Identification = userRequest.Person.Identification,
+                    Phone = userRequest.Person.Phone,
+                    ParishId = userRequest.Person.ParishId,
+                    Address = userRequest.Person.Address,
+                    Status = true,
+                    CreatedAt = DateTime.UtcNow
+                };
 
-                    _context.Persons.Add(person);
-                    await _context.SaveChangesAsync();
+                _context.Persons.Add(person);
+                await _context.SaveChangesAsync();
 
-                    var user = new User
-                    {
-                        Username = userRequest.User.Username,
-                        Password = Encrypt.GenerateHash(userRequest.User.Password),
-                        Email = userRequest.User.Email,
-                        UserType = userRequest.User.UserType,
-                        PersonId = person.Id,
-                        Status = true,
-                        CreatedAt = DateTime.UtcNow
-                    };
-
-                    _context.Users.Add(user);
-                    await _context.SaveChangesAsync();
-
-                    await transaction.CommitAsync();
-
-                    return new StandardResponse<bool>(true, "Usuario creado correctamente", 201);
-                }
-                catch (Exception e)
+                var user = new User
                 {
-                    await transaction.RollbackAsync();
-                    return new ErrorResponse<bool>("Error al crear el usuario", "Error", 500);
-                }
+                    Username = userRequest.User.Username,
+                    Password = Encrypt.GenerateHash(userRequest.User.Password),
+                    Email = userRequest.User.Email,
+                    UserType = userRequest.User.UserType,
+                    PersonId = person.Id,
+                    Status = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                return new StandardResponse<bool>(true, "Usuario creado correctamente", 201);
+            }
+            catch (Exception e)
+            {
+                await transaction.RollbackAsync();
+                return new ErrorResponse<bool>("Error al crear el usuario", "Error", 500);
             }
         }
 
