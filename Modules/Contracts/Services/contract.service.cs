@@ -12,10 +12,11 @@ namespace CondigiBack.Modules.Contracts.Services;
 public class ContractService(AppDBContext appDbContext)
 {
     public async Task<GeneralResponse<List<ContractDto.ContractResponseDTO>>> GetContractsByUser(int currentPage,
-        int pageSize, Guid userId)
+        int pageSize, Guid userId, StatusContractEnum? status)
     {
+        Console.WriteLine("status "+ status);
         var contracts = await appDbContext.Contracts
-            .Where(c => c.ContractParticipants.Any(cp => cp.UserId == userId))
+            .Where(c => (!status.HasValue || c.Status == status) && c.ContractParticipants.Any(cp => cp.UserId == userId))
             .Skip((currentPage - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
