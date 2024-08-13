@@ -89,7 +89,7 @@ public class ContractService(AppDBContext appDbContext)
                     Role = cp.Role,
                     Status = cp.Status,
                     ContractId = cp.ContractId
-                }).ToList()
+                }).Where(cp => cp.Status).ToList()
         };
 
         return new StandardResponse<ContractDto.ContractResponseDTO>(contractResponse, "Contrato encontrado",
@@ -128,7 +128,7 @@ public class ContractService(AppDBContext appDbContext)
                 UserId = userId,
                 Role = RoleParticipantEnum.Sender,
                 CompanyId = contractDto.CompanyId,
-                Status = "active",
+                Status = true,
                 Signed = true
             };
 

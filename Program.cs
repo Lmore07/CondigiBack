@@ -80,6 +80,7 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<CompanyService>();
 builder.Services.AddScoped<ContractService>();
 builder.Services.AddScoped<ContractTypeService>();
+builder.Services.AddScoped<ContractParticipantService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

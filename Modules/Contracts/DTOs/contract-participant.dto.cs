@@ -9,7 +9,7 @@ public class ContractParticipantDTO
         public Guid ContractParticipantId { get; set; }
         public Guid ContractId { get; set; }
         public Guid UserId { get; set; }
-        public string Status { get; set; }
+        public bool Status { get; set; }
         public RoleParticipantEnum Role { get; set; }
         public bool Signed { get; set; }
     }
@@ -36,5 +36,12 @@ public class ContractParticipantDTO
         public Guid ContractId { get; set; }
         public Guid UserId { get; set; }
         public Guid UpdatedBy { get; set; }
+    }
+    
+    public class AddUserToContractDTO
+    {
+        public Guid ContractId { get; set; }
+        public string Email { get; set; }
+        public Guid? CompanyId { get; set; }
     }
 }
