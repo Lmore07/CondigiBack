@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using CondigiBack.Libs.Responses;
+using CondigiBack.Libs.Utils;
 using CondigiBack.Modules.Contracts.DTOs;
 using CondigiBack.Modules.Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +18,6 @@ public class ContractParticipantController(ContractParticipantService service) :
     [EndpointSummary("Add user to contract")]
     public async Task<IActionResult> AddUserToContract([FromBody] ContractParticipantDTO.AddUserToContractDTO payload)
     {
-        Console.WriteLine("payload: "+payload);
         var response = await service.AddUserToContract(payload);
         return StatusCode(response.StatusCode, response);
     }
@@ -38,13 +38,8 @@ public class ContractParticipantController(ContractParticipantService service) :
     [EndpointSummary("Update signed user in contract")]
     public async Task<IActionResult> UpdateSignedContract([FromRoute] Guid contractId)
     {
-        var user = User.FindFirst(ClaimTypes.NameIdentifier);
-        if (user == null)
-        {
-            return Unauthorized(new ErrorResponse<object> { Message = "User ID not found in token." });
-        }
-        
-        var response = await service.UpdateSigned(Guid.Parse(user.Value), contractId);
+        var userId = User.GetUserId();
+        var response = await service.UpdateSigned(userId, contractId);
         return StatusCode(response.StatusCode, response);
     }
 }

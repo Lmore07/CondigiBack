@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using CondigiBack.Libs.Enums;
 using CondigiBack.Libs.Responses;
+using CondigiBack.Libs.Utils;
 using CondigiBack.Modules.Contracts.DTOs;
 using CondigiBack.Modules.Contracts.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -10,29 +11,25 @@ namespace CondigiBack.Modules.Contracts.Controllers;
 
 [Route("api/contracts")]
 [Produces("application/json")]
+[Authorize(Roles = "OWNER")]
+[ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status401Unauthorized)]
 [ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status500InternalServerError)]
-public class ContractController (ContractService service) : Controller 
+[ApiController]
+public class ContractController (ContractService service) : ControllerBase
 {
-    [HttpGet("list"), Authorize (Roles = "OWNER")]
+    [HttpGet("list")]
     [ProducesResponseType<PaginatedResponse<List<ContractDto.ContractResponseDTO>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status404NotFound)]
     [EndpointSummary("Get contracts by user")]
     public async Task<IActionResult> GetContractsByUser([FromQuery] StatusContractEnum? status,
         [FromQuery] int pageSize = 10, [FromQuery] int currentPage = 1)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null)
-        {
-            return Unauthorized(new ErrorResponse<object> { Message = "User ID not found in token." });
-        }
-
-        var userId = Guid.Parse(userIdClaim.Value);
-        Console.WriteLine(userId);
+        var userId = User.GetUserId();
         var response = await service.GetContractsByUser(currentPage, pageSize, userId, status);
         return StatusCode(response.StatusCode, response);
     }
     
-    [HttpGet("{contractId}"), Authorize(Roles = "OWNER")]
+    [HttpGet("{contractId}")]
     [ProducesResponseType<StandardResponse<ContractDto.ContractResponseDTO>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status404NotFound)]
     [EndpointSummary("Get contract by ID")]
@@ -42,43 +39,30 @@ public class ContractController (ContractService service) : Controller
         return StatusCode(response.StatusCode, response);
     }
     
-    [HttpPost("create"), Authorize(Roles = "OWNER")]
+    [HttpPost("create")]
     [ProducesResponseType<StandardResponse<ContractDto.ContractResponseDTO>>(StatusCodes.Status201Created)]
     [ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status400BadRequest)]
     [EndpointSummary("Create a new contract")]
     public async Task<IActionResult> CreateContract([FromBody] ContractDto.CreateContractDTO contractDto)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null)
-        {
-            return Unauthorized(new ErrorResponse<object> { Message = "User ID not found in token." });
-        }
-
-        var userId = Guid.Parse(userIdClaim.Value);
-
+        var userId = User.GetUserId();
         var response = await service.CreateContract(contractDto, userId);
         return StatusCode(response.StatusCode, response);
     }
     
-    [HttpPut("{contractId}"), Authorize(Roles = "OWNER")]
+    [HttpPut("{contractId}")]
     [ProducesResponseType<StandardResponse<bool>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status404NotFound)]
     [EndpointSummary("Update contract by ID")]
     public async Task<IActionResult> UpdateContract(Guid contractId, [FromBody] ContractDto.UpdateContractDTO contractDto)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null)
-        {
-            return Unauthorized(new ErrorResponse<object> { Message = "User ID not found in token." });
-        }
-
-        var userId = Guid.Parse(userIdClaim.Value);
+        var userId = User.GetUserId();
         var response = await service.UpdateContract(contractId, contractDto, userId);
         return StatusCode(response.StatusCode, response);
     }
     
-    [HttpPatch("{contractId}/status"), Authorize(Roles="OWNER")]
+    [HttpPatch("{contractId}/status")]
     [ProducesResponseType<StandardResponse<ContractDto.ContractResponseDTO>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status404NotFound)]

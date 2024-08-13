@@ -35,16 +35,6 @@ namespace CondigiBack.Modules.Users.Controllers
             return StatusCode(response.StatusCode, response);
         }
 
-        [ProducesResponseType<StandardResponse<bool>>(StatusCodes.Status200OK)]
-        [ProducesResponseType<BadRequestResponse<object>>(StatusCodes.Status400BadRequest)]
-        [EndpointSummary("Create a user in a company")]
-        [HttpPost("create-user")]
-        public async Task<IActionResult> AddUser([FromBody] UserDTO.RegistrationUserToCompanyDTO userRegistrationDTO)
-        {
-            var response = await _userService.AddUser(userRegistrationDTO);
-            return StatusCode(response.StatusCode, response);
-        }
-
         [ProducesResponseType<StandardResponse<CompaniesByUserResponseDTO>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status404NotFound)]
         [EndpointSummary("Get all companies by user")]
@@ -55,6 +45,5 @@ namespace CondigiBack.Modules.Users.Controllers
             var response = await _userService.GetCompaniesByUser(userId);
             return StatusCode(response.StatusCode, response);
         }
-
     }
 }
