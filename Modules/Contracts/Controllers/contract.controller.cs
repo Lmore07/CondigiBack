@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using CondigiBack.Libs.Enums;
 using CondigiBack.Libs.Responses;
 using CondigiBack.Modules.Contracts.DTOs;
 using CondigiBack.Modules.Contracts.Services;
@@ -16,7 +17,8 @@ public class ContractController (ContractService service) : Controller
     [ProducesResponseType<PaginatedResponse<List<ContractDto.ContractResponseDTO>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status404NotFound)]
     [EndpointSummary("Get contracts by user")]
-    public async Task<IActionResult> GetContractsByUser([FromQuery] int currentPage = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetContractsByUser([FromQuery] StatusContractEnum? status,
+        [FromQuery] int pageSize = 10, [FromQuery] int currentPage = 1)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim == null)
@@ -26,7 +28,7 @@ public class ContractController (ContractService service) : Controller
 
         var userId = Guid.Parse(userIdClaim.Value);
         Console.WriteLine(userId);
-        var response = await service.GetContractsByUser(currentPage, pageSize, userId);
+        var response = await service.GetContractsByUser(currentPage, pageSize, userId, status);
         return StatusCode(response.StatusCode, response);
     }
     

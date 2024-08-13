@@ -60,7 +60,7 @@ namespace CondigiBack.Contexts
 
             modelBuilder.Entity<Person>()
                 .HasKey(p => p.Id);
-
+            
             // USER
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Person)
