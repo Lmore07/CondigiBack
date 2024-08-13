@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using CondigiBack.Libs.Responses;
+using CondigiBack.Libs.Utils;
 using CondigiBack.Modules.Contracts.DTOs;
 using CondigiBack.Modules.Contracts.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -28,14 +29,7 @@ public class ContractTypeController(ContractTypeService service) : Controller
     [EndpointSummary("Create a new contract type")]
     public async Task<IActionResult> CreateContractType([FromBody] ContractTypeDto.CreateContractTypeDTO contractTypeDto)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null)
-        {
-            return Unauthorized(new ErrorResponse<object> { Message = "User ID not found in token." });
-        }
-
-        var userId = Guid.Parse(userIdClaim.Value);
-
+        var userId = User.GetUserId();
         var response = await service.CreateContractType(contractTypeDto, userId);
         return StatusCode(response.StatusCode, response);
     }

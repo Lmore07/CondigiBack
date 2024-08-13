@@ -37,7 +37,7 @@ Encrypt.GenerateRandomIv();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: "MyAllowSpecificOrigins",
+    options.AddPolicy(name: "AllowedHosts",
         builder =>
         {
             builder.AllowAnyOrigin()
@@ -142,7 +142,7 @@ app.UseHttpsRedirection();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
 //CORS
-app.UseCors("MyAllowSpecificOrigins");
+app.UseCors("AllowedHosts");
 
 app.UseAuthorization();
 app.MapControllers();
