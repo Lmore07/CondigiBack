@@ -6,4 +6,10 @@
         Receiver = 1,
         Reviewer = 2,
     }
+
+    public enum ParticipantEnum
+    {
+        Company = 0,
+        Person = 1,
+    }
 }

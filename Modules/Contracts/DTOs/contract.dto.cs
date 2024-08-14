@@ -67,11 +67,11 @@ public class ContractDto
         public Guid? UpdatedBy { get; set; }
     }
     
-    
-    
     public class UpdateStatusContractDTO
     {
         [Required]
         public StatusContractEnum Status { get; set; }
     }
+
+
 }

@@ -13,7 +13,7 @@ namespace CondigiBack.Models
         [Column("contract_id")]
         public Guid ContractId { get; set; }
         [Column("user_id")]
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
         [Column("company_id")]
         public Guid? CompanyId { get; set; }
         [Column("role")]

@@ -72,5 +72,4 @@ public class ContractController (ContractService service) : ControllerBase
         var response = await service.UpdateStatusContract(contractId, statusDTO.Status);
         return StatusCode(response.StatusCode, response);
     }
-    
 }

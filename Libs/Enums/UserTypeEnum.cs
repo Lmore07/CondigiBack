@@ -3,6 +3,6 @@
     public enum UserTypeEnum
     {
         OWNER=0,
-        REVIEWER=1,
+        SENDER=1,
     }
 }

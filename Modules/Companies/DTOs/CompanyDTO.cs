@@ -6,7 +6,11 @@
         {
             public Guid CompanyId { get; set; }
             public string CompanyName { get; set; }
-            public string Description { get; set; }
+            public string RUC { get; set; }
+            public string Phone { get; set; }
+            public string Email { get; set; }
+            public string Address { get; set; }
+            public int ParishId { get; set; }
             public bool Status { get; set; }
         }
 
@@ -14,8 +18,12 @@
         {
             public Guid CompanyId { get; set; }
             public string CompanyName { get; set; }
-            public string Description { get; set; }
             public bool Status { get; set; }
+            public string RUC { get; set; }
+            public string Phone { get; set; }
+            public string Email { get; set; }
+            public string Address { get; set; }
+            public int ParishId { get; set; }
         }
 
         public class  UsersByCompanyResponseDTO

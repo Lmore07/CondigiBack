@@ -21,6 +21,8 @@ namespace CondigiBack.Contexts
         public DbSet<ContractParticipant> ContractParticipants { get; set; }
         public DbSet<UserCompanies> UserCompanies { get; set; }
 
+        public DbSet<AIRequest> AIRequests { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -94,6 +96,18 @@ namespace CondigiBack.Contexts
 
             modelBuilder.Entity<Company>()
                 .HasKey(c => c.Id);
+
+            modelBuilder.Entity<Company>()
+                .HasKey(c => c.Id);
+
+            modelBuilder.Entity<Company>()
+                .HasIndex(c => c.RUC)
+                .IsUnique();
+
+            modelBuilder.Entity<Company>()
+                .HasOne(c => c.Parish)
+                .WithMany(p => p.Companies)
+                .HasForeignKey(c => c.ParishId);
 
             //UserCompanies
 
