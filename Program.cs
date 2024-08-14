@@ -81,6 +81,8 @@ builder.Services.AddScoped<CompanyService>();
 builder.Services.AddScoped<ContractService>();
 builder.Services.AddScoped<ContractTypeService>();
 builder.Services.AddScoped<ContractParticipantService>();
+builder.Services.AddScoped<ContractAIService>();
+builder.Services.AddHttpClient<GeminiService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

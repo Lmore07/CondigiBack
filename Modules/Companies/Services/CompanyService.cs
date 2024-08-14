@@ -30,7 +30,11 @@ namespace CondigiBack.Modules.Companies.Services
             {
                 CompanyId = c.Id,
                 CompanyName = c.Name,
-                Description = c.Description,
+                Address = c.Address,
+                Email = c.Email,
+                ParishId = c.ParishId,
+                Phone = c.Phone,
+                RUC = c.RUC,
                 Status = c.Status
             }).ToList();
 

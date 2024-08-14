@@ -1,4 +1,5 @@
 ﻿using CondigiBack.Contexts;
+using CondigiBack.Libs.Enums;
 using CondigiBack.Libs.Interfaces;
 using CondigiBack.Libs.Responses;
 using CondigiBack.Libs.Utils;
@@ -34,9 +35,13 @@ namespace CondigiBack.Modules.Users.Services
                     var company = new Company
                     {
                         Name = companyRegistration.Name,
-                        Description = companyRegistration.Description,
                         Status = true,
                         CreatedAt = DateTime.UtcNow,
+                        Email = companyRegistration.Email,
+                        Phone = companyRegistration.Phone,
+                        Address = companyRegistration.Address,
+                        ParishId = companyRegistration.ParishId,
+                        RUC = companyRegistration.RUC,
                         CreatedBy = userId
                     };
                     _dbContext.Companies.Add(company);
@@ -46,7 +51,7 @@ namespace CondigiBack.Modules.Users.Services
                     {
                         UserId = userId,
                         CompanyId = company.Id,
-                        RoleInCompany = "OWNER"
+                        RoleInCompany = UserTypeEnum.OWNER
                     };
                     _dbContext.UserCompanies.Add(userCompany);
                     await _dbContext.SaveChangesAsync();
@@ -104,7 +109,7 @@ namespace CondigiBack.Modules.Users.Services
                     {
                         UserId = user.Id,
                         CompanyId = userRegistration.CompanyId,
-                        RoleInCompany = "REVIEWER"
+                        RoleInCompany = UserTypeEnum.SENDER
                     };
                     _dbContext.UserCompanies.Add(userCompany);
                     await _dbContext.SaveChangesAsync();
@@ -126,7 +131,7 @@ namespace CondigiBack.Modules.Users.Services
         public async Task<GeneralResponse<List<CompanyDTO.CompaniesByUserResponseDTO>>> GetCompaniesByUser(Guid userId)
         {
             var userCompanies = await _dbContext.UserCompanies
-                .Where(uc => uc.UserId == userId && uc.RoleInCompany == "OWNER")
+                .Where(uc => uc.UserId == userId && uc.RoleInCompany == UserTypeEnum.OWNER)
                 .ToListAsync();
             if (userCompanies.Count == 0)
             {
@@ -141,7 +146,6 @@ namespace CondigiBack.Modules.Users.Services
             {
                 CompanyId = p.Id,
                 CompanyName = p.Name,
-                Description = p.Description,
                 Status = p.Status
             }).ToList();
             return new StandardResponse<List<CompanyDTO.CompaniesByUserResponseDTO>>(companiesResponse, "Compañías encontradas", 200);

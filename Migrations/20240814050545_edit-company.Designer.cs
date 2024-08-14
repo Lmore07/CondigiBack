@@ -3,6 +3,7 @@ using System;
 using CondigiBack.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CondigiBack.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    partial class AppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240814050545_edit-company")]
+    partial class editcompany
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -94,6 +97,9 @@ namespace CondigiBack.Migrations
 
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -226,7 +232,7 @@ namespace CondigiBack.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("status");
 
-                    b.Property<Guid?>("UserId")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
@@ -415,8 +421,9 @@ namespace CondigiBack.Migrations
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("RoleInCompany")
-                        .HasColumnType("integer");
+                    b.Property<string>("RoleInCompany")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -488,7 +495,9 @@ namespace CondigiBack.Migrations
 
                     b.HasOne("CondigiBack.Models.User", "User")
                         .WithMany("ContractParticipants")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Company");
 

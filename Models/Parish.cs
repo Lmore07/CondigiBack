@@ -19,5 +19,7 @@ namespace CondigiBack.Models
 
         public ICollection<Person> Persons { get; set; }
 
+        public ICollection<Company> Companies { get; set; }
+
     }
 }

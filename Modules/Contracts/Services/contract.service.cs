@@ -85,7 +85,6 @@ public class ContractService(AppDBContext appDbContext)
                 new ContractParticipantDTO.ContractParticipantResponseDTO
                 {
                     ContractParticipantId = cp.Id,
-                    UserId = cp.UserId,
                     Signed = cp.Signed,
                     Role = cp.Role,
                     Status = cp.Status,
@@ -201,4 +200,5 @@ public class ContractService(AppDBContext appDbContext)
 
         return new StandardResponse<bool>(true, "Estado del contrato actualizado", StatusCodes.Status200OK);
     }
+
 }
