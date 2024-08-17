@@ -9,6 +9,7 @@ using CondigiBack.Modules.Contracts.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
+using static CondigiBack.Modules.Contracts.DTOs.ContractAIDTO;
 using static CondigiBack.Modules.Contracts.DTOs.ContractAIDTO.CreateReceiverCompany;
 
 namespace CondigiBack.Modules.Contracts.Services
@@ -83,13 +84,13 @@ namespace CondigiBack.Modules.Contracts.Services
             return new StandardResponse<List<ContractAIDTO.GetPersonsDTO>>(persons, "Personas encontradas", StatusCodes.Status200OK);
         }
 
-        public async Task<GeneralResponse<bool>> CreateContractAICompanyToCompany(ContractAIDTO.CreateContractAICompanyToCompanyDTO contractDto, Guid userId)
+        public async Task<GeneralResponse<ContractAIResponseCompanyToCompany>> CreateContractAICompanyToCompany(ContractAIDTO.CreateContractAICompanyToCompanyDTO contractDto, Guid userId)
         {
 
             var senderCompany = await _context.Companies.FindAsync(contractDto.SenderCompanyId);
             if(senderCompany == null)
             {
-                return new ErrorResponse<bool>("La empresa remitente no existe", "Empresa no encontrada",
+                return new ErrorResponse<ContractAIResponseCompanyToCompany>("La empresa remitente no existe", "Empresa no encontrada",
                     StatusCodes.Status404NotFound);
             }
 
@@ -122,7 +123,7 @@ namespace CondigiBack.Modules.Contracts.Services
                 var contractType = await _context.ContractTypes.FindAsync(contractDto.ContractTypeId);
                 if (contractType == null)
                 {
-                    return new ErrorResponse<bool>("El tipo de contrato no existe", "Tipo de contrato no encontrado",
+                    return new ErrorResponse<ContractAIResponseCompanyToCompany>("El tipo de contrato no existe", "Tipo de contrato no encontrado",
                         StatusCodes.Status404NotFound);
                 }
 
@@ -206,15 +207,26 @@ namespace CondigiBack.Modules.Contracts.Services
                 await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
+                var contractResponse = new ContractAIResponseCompanyToCompany
+                {
+                    Id = contract.Id,
+                    ContractTypeId = contract.ContractTypeId,
+                    StartDate = contract.StartDate,
+                    EndDate = contract.EndDate,
+                    NumClauses = contract.NumClauses,
+                    PaymentAmount = contract.PaymentAmount,
+                    PaymentFrequency = contract.PaymentFrequency,
+                    Content = contract.Content
+                };
+                return new StandardResponse<ContractAIResponseCompanyToCompany>(contractResponse, "Contrato creado", StatusCodes.Status201Created);
             }
             catch (Exception e)
             {
                 await transaction.RollbackAsync();
-                return new ErrorResponse<bool>("Error al crear el contrato", "Error",
+                return new ErrorResponse<ContractAIResponseCompanyToCompany>("Error al crear el contrato", "Error",
                     StatusCodes.Status500InternalServerError);
             }
 
-            return new StandardResponse<bool>(true, "Contrato creado", StatusCodes.Status201Created);
         }
 
     }

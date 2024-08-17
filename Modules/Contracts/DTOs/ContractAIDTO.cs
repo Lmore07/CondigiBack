@@ -1,5 +1,7 @@
 ﻿using CondigiBack.Libs.Enums;
 using CondigiBack.Modules.Users.DTOs;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CondigiBack.Modules.Contracts.DTOs
 {
@@ -76,6 +78,28 @@ namespace CondigiBack.Modules.Contracts.DTOs
         {
             public Guid? SenderPersonId { get; set; }
             public Guid? ReceiverPersonId { get; set; }
+        }
+
+        public class ContractAIResponseCompanyToCompany
+        {
+            public Guid Id { get; set; }
+            
+            public Guid ContractTypeId { get; set; }
+
+            public DateTime StartDate { get; set; }
+
+            public DateTime EndDate { get; set; }
+
+            public int? NumClauses { get; set; }
+
+            public decimal? PaymentAmount { get; set; }
+
+            public PaymentFrequencyEnum? PaymentFrequency { get; set; }
+
+            public string? Content { get; set; }
+
+            public StatusContractEnum Status { get; set; }
+
         }
 
     }
