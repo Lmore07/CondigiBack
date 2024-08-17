@@ -46,7 +46,7 @@ namespace CondigiBack.Modules.Contracts.Controllers
         }
 
         [HttpPost("/api/contracts-ai/create/companyToCompany")]
-        [ProducesResponseType<StandardResponse<ContractDto.ContractResponseDTO>>(StatusCodes.Status201Created)]
+        [ProducesResponseType<StandardResponse<ContractAIResponseCompanyToCompany>>(StatusCodes.Status201Created)]
         [ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status400BadRequest)]
         [EndpointSummary("Create a new contract with AI C2C")]
         public async Task<IActionResult> CreateContractAI([FromBody] CreateContractAICompanyToCompanyDTO contractDto)
