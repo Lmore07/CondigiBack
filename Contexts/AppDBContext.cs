@@ -135,7 +135,7 @@ namespace CondigiBack.Contexts
                 .WithMany(c => c.ContractParticipants)
                 .HasForeignKey(cp => cp.ContractId);
 
-            //relacion con usuarios
+            //relacion con usuarios (opcional)
             modelBuilder.Entity<ContractParticipant>()
                 .HasOne(cp => cp.User)
                 .WithMany(u => u.ContractParticipants)

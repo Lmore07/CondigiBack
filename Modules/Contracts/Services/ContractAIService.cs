@@ -28,7 +28,7 @@ namespace CondigiBack.Modules.Contracts.Services
         public async Task<GeneralResponse<List<ContractAIDTO.GetCompaniesDTO>>> GetCompanies(Guid userId)
         {
             var userCompanies = await _context.UserCompanies
-                .Where(uc => uc.UserId == userId && uc.RoleInCompany== UserTypeEnum.OWNER)
+                .Where(uc => uc.UserId == userId && uc.RoleInCompany == UserTypeEnum.OWNER)
                 .Select(uc => uc.CompanyId)
                 .ToListAsync();
 
@@ -47,11 +47,13 @@ namespace CondigiBack.Modules.Contracts.Services
 
             if (companies.Count == 0)
             {
-                return new ErrorResponse<List<ContractAIDTO.GetCompaniesDTO>>("No se encontraron empresas", "Empresas no encontradas",
+                return new ErrorResponse<List<ContractAIDTO.GetCompaniesDTO>>("No se encontraron empresas",
+                    "Empresas no encontradas",
                     StatusCodes.Status404NotFound);
             }
 
-            return new StandardResponse<List<ContractAIDTO.GetCompaniesDTO>>(companies, "Empresas encontradas", StatusCodes.Status200OK);
+            return new StandardResponse<List<ContractAIDTO.GetCompaniesDTO>>(companies, "Empresas encontradas",
+                StatusCodes.Status200OK);
         }
 
         public async Task<GeneralResponse<List<ContractAIDTO.GetPersonsDTO>>> GetPersons(Guid userId)
@@ -65,169 +67,180 @@ namespace CondigiBack.Modules.Contracts.Services
                 .Where(p => p.Identification != currentUserIdentification)
                 .Select(p => new ContractAIDTO.GetPersonsDTO
                 {
-                    Id = p.Id,
+                    Id = p.User.Id,
                     Identification = p.Identification,
                     FirstName = p.FirstName,
                     LastName = p.LastName,
                     Email = p.User.Email,
                     Phone = p.Phone,
-                    ParishId = p.ParishId??0,
+                    ParishId = p.ParishId ?? 0,
                     Address = p.Address
                 }).ToListAsync();
 
             if (persons.Count == 0)
             {
-                return new ErrorResponse<List<ContractAIDTO.GetPersonsDTO>>("No se encontraron personas", "Personas no encontradas",
+                return new ErrorResponse<List<ContractAIDTO.GetPersonsDTO>>("No se encontraron personas",
+                    "Personas no encontradas",
                     StatusCodes.Status404NotFound);
             }
 
-            return new StandardResponse<List<ContractAIDTO.GetPersonsDTO>>(persons, "Personas encontradas", StatusCodes.Status200OK);
+            return new StandardResponse<List<ContractAIDTO.GetPersonsDTO>>(persons, "Personas encontradas",
+                StatusCodes.Status200OK);
         }
 
-        public async Task<GeneralResponse<ContractAIResponseCompanyToCompany>> CreateContractAICompanyToCompany(ContractAIDTO.CreateContractAICompanyToCompanyDTO contractDto, Guid userId)
-        {
 
-            var senderCompany = await _context.Companies.FindAsync(contractDto.SenderCompanyId);
-            if(senderCompany == null)
+        public async Task<GeneralResponse<Guid>> CreateContractAi(ContractAIDTO.ContractAIGeneralDto payload,
+            Guid userId)
+        {
+            var user = await _context.Users.Include(u => u.Person).FirstOrDefaultAsync(u => u.Id == userId);
+
+            Company senderCompany = null;
+            if (payload.SenderType == ParticipantEnum.Company)
             {
-                return new ErrorResponse<ContractAIResponseCompanyToCompany>("La empresa remitente no existe", "Empresa no encontrada",
-                    StatusCodes.Status404NotFound);
+                senderCompany = await _context.Companies.FindAsync(payload.SenderId);
+                if (senderCompany == null)
+                    return new ErrorResponse<Guid>("La empresa remitente no existe", "Empresa no encontrada",
+                        StatusCodes.Status404NotFound);
             }
 
-            var receiverCompany = await _context.Companies.FindAsync(contractDto.ReceiverCompanyId);
+            if (payload.ReceiverType == ParticipantEnum.Company)
+            {
+                var receiverCompany = await _context.Companies.FindAsync(payload.ReceiverId);
+                if (receiverCompany == null)
+                    return new ErrorResponse<Guid>("La empresa receptora no existe", "Empresa no encontrada",
+                        StatusCodes.Status404NotFound);
+            }
+            else
+            {
+                var receiverPerson = await _context.Users.FirstOrDefaultAsync(u => u.Id == payload.ReceiverId);
+                if (receiverPerson == null)
+                {
+                    return new ErrorResponse<Guid>("La persona receptora no existe", "Persona no encontrada",
+                        StatusCodes.Status404NotFound);
+                }
+            }
+
+            var contractType = await _context.ContractTypes.FindAsync(payload.ContractTypeId);
+            if (contractType == null)
+                return new ErrorResponse<Guid>("El tipo de contrato no existe", "Tipo de contrato no encontrado",
+                    StatusCodes.Status404NotFound);
+
+            var prompt = await GenerateContractContent(payload, user!, senderCompany!, contractType);
+
+            var content = await _geminiService.GenerateContentAsync(prompt);
+
 
             await using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
-                if (receiverCompany == null)
-                {
-                    // Create receiver company if it doesn't exist
-                    receiverCompany = new Company
-                    {
-                        Name = contractDto.ReceiverCompany.Name,
-                        Address = contractDto.ReceiverCompany.Address,
-                        Email = contractDto.ReceiverCompany.Email,
-                        Phone = contractDto.ReceiverCompany.Phone,
-                        ParishId = contractDto.ReceiverCompany.ParishId,
-                        RUC = contractDto.ReceiverCompany.RUC,
-                        Status = true,
-                        CreatedBy = userId,
-                        CreatedAt = DateTime.UtcNow,
-                    };
-
-                    _context.Companies.Add(receiverCompany);
-                    await _context.SaveChangesAsync();
-                }
-
-                var contractType = await _context.ContractTypes.FindAsync(contractDto.ContractTypeId);
-                if (contractType == null)
-                {
-                    return new ErrorResponse<ContractAIResponseCompanyToCompany>("El tipo de contrato no existe", "Tipo de contrato no encontrado",
-                        StatusCodes.Status404NotFound);
-                }
-
-                var prompt = new GeneratePrompt().CompanyToCompany(receiverCompany, senderCompany, contractType,contractDto);
-
-                var key = Guid.NewGuid().ToString();
                 var contract = new Contract
                 {
-                    Id= new Guid(),
-                    ContractTypeId = contractDto.ContractTypeId,
-                    StartDate = contractDto.StartDate,
-                    EndDate = contractDto.EndDate,
-                    NumClauses = contractDto.NumClauses,
-                    PaymentAmount = contractDto.PaymentAmount,
-                    PaymentFrequency = contractDto.PaymentFrequency,
-                    Status = contractDto.Status,
+                    ContractTypeId = payload.ContractTypeId,
+                    StartDate = payload.StartDate,
+                    EndDate = payload.EndDate,
+                    NumClauses = payload.NumClauses,
+                    PaymentAmount = payload.PaymentAmount,
+                    PaymentFrequency = payload.PaymentFrequency,
+                    Content = content,
+                    Status = StatusContractEnum.Pending,
                     CreatedAt = DateTime.UtcNow,
                     CreatedBy = userId,
                     UpdatedAt = DateTime.UtcNow,
                     UpdatedBy = userId,
-                    EncryptionKey = Encrypt.GenerateHash(key),
-                    Content = await _geminiService.GenerateContentAsync(prompt),
+                    EncryptionKey = "1234567890123456"
                 };
 
                 _context.Contracts.Add(contract);
                 await _context.SaveChangesAsync();
 
-                var aiRequests = new List<AIRequest>
+                var aiRequest = new AIRequest
                 {
-                    new AIRequest
-                    {
-                        Content = contractDto.ContractDetails,
-                        type = 0,
-                        CreatedAt = DateTime.UtcNow,
-                        CreatedBy = userId,
-                        ContractId = contract.Id
-                    },
-                    new AIRequest
-                    {
-                        Content = contractDto.ContractObjects,
-                        type = 1,
-                        CreatedAt = DateTime.UtcNow,
-                        CreatedBy = userId,
-                        ContractId = contract.Id
-                    },
-                    new AIRequest
-                    {
-                        Content = contractDto.ContractConfidentiality,
-                        type = 2,
-                        CreatedAt = DateTime.UtcNow,
-                        CreatedBy = userId,
-                        ContractId = contract.Id
-                    }
+                    Content = content,
+                    type = 0,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = userId,
+                    ContractId = contract.Id
                 };
 
-                _context.AIRequests.AddRange(aiRequests);
+                _context.AIRequests.Add(aiRequest);
                 await _context.SaveChangesAsync();
 
-                var contractParticipants = new List<ContractParticipant>
+                var participants = new List<ContractParticipant>
                 {
                     new ContractParticipant
                     {
                         ContractId = contract.Id,
                         Role = RoleParticipantEnum.Sender,
-                        CompanyId = contractDto.SenderCompanyId,
+                        CompanyId = payload.SenderType == ParticipantEnum.Company ? payload.SenderId : (Guid?)null,
                         Status = true,
-                        Signed = true
-                    },
-                    new ContractParticipant
-                    {
-                        ContractId = contract.Id,
-                        Role = RoleParticipantEnum.Receiver,
-                        CompanyId = contractDto.ReceiverCompanyId??receiverCompany.Id,
-                        Status = true,
-                        Signed = false
+                        Signed = true,
+                        UserId = userId
                     }
                 };
 
-                _context.ContractParticipants.AddRange(contractParticipants);
+                if (payload.ReceiverId.HasValue)
+                {
+                    participants.Add(new ContractParticipant
+                    {
+                        ContractId = contract.Id,
+                        Role = RoleParticipantEnum.Receiver,
+                        CompanyId =
+                            payload.ReceiverType == ParticipantEnum.Company ? payload.ReceiverId.Value : (Guid?)null,
+                        UserId =
+                            payload.ReceiverType == ParticipantEnum.Person ? payload.ReceiverId.Value : (Guid?)null,
+                        Status = true,
+                        Signed = false
+                    });
+                }
 
+                _context.ContractParticipants.AddRange(participants);
                 await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
-                var contractResponse = new ContractAIResponseCompanyToCompany
-                {
-                    Id = contract.Id,
-                    ContractTypeId = contract.ContractTypeId,
-                    StartDate = contract.StartDate,
-                    EndDate = contract.EndDate,
-                    NumClauses = contract.NumClauses,
-                    PaymentAmount = contract.PaymentAmount,
-                    PaymentFrequency = contract.PaymentFrequency,
-                    Content = contract.Content
-                };
-                return new StandardResponse<ContractAIResponseCompanyToCompany>(contractResponse, "Contrato creado", StatusCodes.Status201Created);
+
+                return new StandardResponse<Guid>(contract.Id, "Contrato creado", StatusCodes.Status201Created);
             }
             catch (Exception e)
             {
                 await transaction.RollbackAsync();
-                return new ErrorResponse<ContractAIResponseCompanyToCompany>("Error al crear el contrato", "Error",
-                    StatusCodes.Status500InternalServerError);
+                return new ErrorResponse<Guid>(e.Message, "Error al crear el contrato",
+                    StatusCodes.Status400BadRequest);
             }
-
         }
 
+        private async Task<string> GenerateContractContent(ContractAIDTO.ContractAIGeneralDto payload, User user,
+            Company senderCompany, ContractType contractType)
+        {
+            if (payload.ReceiverType == ParticipantEnum.Company)
+            {
+                var receiverCompany = await _context.Companies.FindAsync(payload.ReceiverId);
+                if (receiverCompany == null)
+                    throw new Exception("La empresa receptora no existe");
+
+                return payload.SenderType == ParticipantEnum.Company
+                    ? new GeneratePrompt().GenerateContent(receiverCompany, senderCompany, null, null, contractType,
+                        payload)
+                    : new GeneratePrompt().GenerateContent(receiverCompany, null, null, user?.Person, contractType,
+                        payload);
+            }
+            else
+            {
+                var receiverPerson = await _context.Users
+                    .Include(u => u.Person)
+                    .FirstOrDefaultAsync(u => u.Id == payload.ReceiverId);
+
+                if (receiverPerson == null)
+                    throw new Exception("La persona receptora no existe");
+
+                return payload.SenderType == ParticipantEnum.Company
+                    ? new GeneratePrompt().GenerateContent(null, senderCompany, receiverPerson.Person, null,
+                        contractType,
+                        payload)
+                    : new GeneratePrompt().GenerateContent(null, null, receiverPerson.Person, user?.Person,
+                        contractType,
+                        payload);
+            }
+        }
     }
 }
