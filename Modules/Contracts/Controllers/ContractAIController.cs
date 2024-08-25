@@ -18,6 +18,7 @@ namespace CondigiBack.Modules.Contracts.Controllers
     public class ContractAIController : ControllerBase
     {
         private readonly ContractAIService service;
+
         public ContractAIController(ContractAIService service)
         {
             this.service = service;
@@ -45,14 +46,20 @@ namespace CondigiBack.Modules.Contracts.Controllers
             return StatusCode(response.StatusCode, response);
         }
 
-        [HttpPost("/api/contracts-ai/create/companyToCompany")]
+        [HttpPost("/api/contracts-ai/create")]
         [ProducesResponseType<StandardResponse<ContractAIResponseCompanyToCompany>>(StatusCodes.Status201Created)]
         [ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status400BadRequest)]
-        [EndpointSummary("Create a new contract with AI C2C")]
-        public async Task<IActionResult> CreateContractAI([FromBody] CreateContractAICompanyToCompanyDTO contractDto)
+        [EndpointSummary("Create a new contract with AI")]
+        [EndpointDescription(@"Verificar en el esquema los campos obligatorios.
+ - El SenderId sólo se envía cuando es una empresa que va a enviar el contrato.
+ - El ReceiverId puede ser el Id de una empresa o una persona.
+ - Si el ReceiverType es Company (0), el ReceiverId debe ser el Id de una empresa o el ReceiverCompany debe ser enviado.
+ - Si el ReceiverType es Person (1), el ReceiverId debe ser el Id de una persona o el ReceiverPerson debe ser enviado.
+ - Asimismo, si el SenderType es 0 es una empresa, si es 1 es una persona.")]
+        public async Task<IActionResult> CreateContractAi([FromBody] ContractAIGeneralDto contractDto)
         {
             var userId = User.GetUserId();
-            var response = await service.CreateContractAICompanyToCompany(contractDto, userId);
+            var response = await service.CreateContractAi(contractDto, userId);
             return StatusCode(response.StatusCode, response);
         }
     }

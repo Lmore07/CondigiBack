@@ -4,7 +4,6 @@
     {
         Sender = 0,
         Receiver = 1,
-        Reviewer = 2,
     }
 
     public enum ParticipantEnum

@@ -20,7 +20,7 @@ namespace CondigiBack.Models
         public RoleParticipantEnum Role { get; set; }
         [Column("status")]
         public Boolean Status { get; set; }
-        public User User { get; set; }
+        public User? User { get; set; }
         public Contract Contract { get; set; }
         public Company? Company { get; set; }
         [Column("signed")]
