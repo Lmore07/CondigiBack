@@ -103,20 +103,23 @@ namespace CondigiBack.Modules.Contracts.Services
                         StatusCodes.Status404NotFound);
             }
 
-            if (payload.ReceiverType == ParticipantEnum.Company)
+            if (payload.ReceiverId != null)
             {
-                var receiverCompany = await _context.Companies.FindAsync(payload.ReceiverId);
-                if (receiverCompany == null)
-                    return new ErrorResponse<Guid>("La empresa receptora no existe", "Empresa no encontrada",
-                        StatusCodes.Status404NotFound);
-            }
-            else
-            {
-                var receiverPerson = await _context.Users.FirstOrDefaultAsync(u => u.Id == payload.ReceiverId);
-                if (receiverPerson == null)
+                if (payload.ReceiverType == ParticipantEnum.Company)
                 {
-                    return new ErrorResponse<Guid>("La persona receptora no existe", "Persona no encontrada",
-                        StatusCodes.Status404NotFound);
+                    var receiverCompany = await _context.Companies.FindAsync(payload.ReceiverId);
+                    if (receiverCompany == null)
+                        return new ErrorResponse<Guid>("La empresa receptora no existe", "Empresa no encontrada",
+                            StatusCodes.Status404NotFound);
+                }
+                else
+                {
+                    var receiverPerson = await _context.Users.FirstOrDefaultAsync(u => u.Id == payload.ReceiverId);
+                    if (receiverPerson == null)
+                    {
+                        return new ErrorResponse<Guid>("La persona receptora no existe", "Persona no encontrada",
+                            StatusCodes.Status404NotFound);
+                    }
                 }
             }
 
@@ -214,9 +217,25 @@ namespace CondigiBack.Modules.Contracts.Services
         {
             if (payload.ReceiverType == ParticipantEnum.Company)
             {
-                var receiverCompany = await _context.Companies.FindAsync(payload.ReceiverId);
-                if (receiverCompany == null)
-                    throw new Exception("La empresa receptora no existe");
+                Company? receiverCompany = null;
+                if (payload.ReceiverId != null)
+                {
+                    receiverCompany = await _context.Companies.FindAsync(payload.ReceiverId);
+                    if (receiverCompany == null)
+                        throw new Exception("La empresa receptora no existe");
+                }
+                else
+                {
+                    receiverCompany = new Company
+                    {
+                        Name = payload.ReceiverCompany!.Name,
+                        Email = payload.ReceiverCompany.Email,
+                        Address = payload.ReceiverCompany.Address,
+                        Phone = payload.ReceiverCompany.Phone,
+                        ParishId = payload.ReceiverCompany.ParishId,
+                        RUC = payload.ReceiverCompany.RUC
+                    };
+                }
 
                 return payload.SenderType == ParticipantEnum.Company
                     ? new GeneratePrompt().GenerateContent(receiverCompany, senderCompany, null, null, contractType,
@@ -226,13 +245,32 @@ namespace CondigiBack.Modules.Contracts.Services
             }
             else
             {
-                var receiverPerson = await _context.Users
-                    .Include(u => u.Person)
-                    .FirstOrDefaultAsync(u => u.Id == payload.ReceiverId);
+                User? receiverPerson = null;
+                if (payload.ReceiverId != null)
+                {
+                    receiverPerson = await _context.Users
+                        .Include(u => u.Person)
+                        .FirstOrDefaultAsync(u => u.Id == payload.ReceiverId);
 
-                if (receiverPerson == null)
-                    throw new Exception("La persona receptora no existe");
-
+                    if (receiverPerson == null)
+                        throw new Exception("La persona receptora no existe");
+                }
+                else
+                {
+                    receiverPerson = new User
+                    {
+                        Email = payload.ReceiverPerson!.Email,
+                        Person = new Person
+                        {
+                            Identification = payload.ReceiverPerson.Identification,
+                            FirstName = payload.ReceiverPerson.FirstName,
+                            LastName = payload.ReceiverPerson.LastName,
+                            Phone = payload.ReceiverPerson.Phone,
+                            Address = payload.ReceiverPerson.Address,
+                        }
+                    };
+                }
+                
                 return payload.SenderType == ParticipantEnum.Company
                     ? new GeneratePrompt().GenerateContent(null, senderCompany, receiverPerson.Person, null,
                         contractType,
