@@ -140,8 +140,8 @@ namespace CondigiBack.Modules.Contracts.Services
                 var contract = new Contract
                 {
                     ContractTypeId = payload.ContractTypeId,
-                    StartDate = payload.StartDate,
-                    EndDate = payload.EndDate,
+                    StartDate = payload.StartDate.ToUniversalTime(),
+                    EndDate = payload.EndDate.ToUniversalTime(),
                     NumClauses = payload.NumClauses,
                     PaymentAmount = payload.PaymentAmount,
                     PaymentFrequency = payload.PaymentFrequency,

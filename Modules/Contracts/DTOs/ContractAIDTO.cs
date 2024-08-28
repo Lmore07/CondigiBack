@@ -31,9 +31,10 @@ namespace CondigiBack.Modules.Contracts.DTOs
             public string Address { get; set; }
         }
 
-        public class CreateContractAIDTO
+        public class CreateContractAIDTO : IValidatableObject
         {
-            [Required] public Guid ContractTypeId { get; set; }
+            [Required]
+            public Guid ContractTypeId { get; set; }
             [Required] public DateTime StartDate { get; set; }
             [Required] public DateTime EndDate { get; set; }
             public int? NumClauses { get; set; }
@@ -43,6 +44,64 @@ namespace CondigiBack.Modules.Contracts.DTOs
             [Required] public string ContractDetails { get; set; }
             [Required] public string ContractObjects { get; set; }
             [Required] public string ContractConfidentiality { get; set; }
+            public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+            {
+                if (StartDate > EndDate)
+                {
+                    yield return new ValidationResult(
+                        "La fecha de inicio no puede ser mayor a la fecha de fin.",
+                        new[] { nameof(StartDate), nameof(EndDate) }
+                    );
+                }
+                
+                if (PaymentAmount.HasValue && PaymentAmount.Value < 0)
+                {
+                    yield return new ValidationResult(
+                        "El monto de pago no puede ser negativo.",
+                        new[] { nameof(PaymentAmount) }
+                    );
+                }
+                
+                if (NumClauses.HasValue && NumClauses.Value < 0)
+                {
+                    yield return new ValidationResult(
+                        "El número de cláusulas no puede ser negativo.",
+                        new[] { nameof(NumClauses) }
+                    );
+                }
+                
+                if (ContractTypeId == Guid.Empty)
+                {
+                    yield return new ValidationResult(
+                        "Debe especificar un tipo de contrato.",
+                        new[] { nameof(ContractTypeId) }
+                    );
+                }
+                
+                if (string.IsNullOrWhiteSpace(ContractDetails))
+                {
+                    yield return new ValidationResult(
+                        "Debe especificar los detalles del contrato.",
+                        new[] { nameof(ContractDetails) }
+                    );
+                }
+                
+                if (string.IsNullOrWhiteSpace(ContractObjects))
+                {
+                    yield return new ValidationResult(
+                        "Debe especificar los objetos del contrato.",
+                        new[] { nameof(ContractObjects) }
+                    );
+                }
+                
+                if (string.IsNullOrWhiteSpace(ContractConfidentiality))
+                {
+                    yield return new ValidationResult(
+                        "Debe especificar la confidencialidad del contrato.",
+                        new[] { nameof(ContractConfidentiality) }
+                    );
+                }
+            }
         }
 
         public class CreateReceiverCompany
@@ -135,9 +194,11 @@ namespace CondigiBack.Modules.Contracts.DTOs
         public class ContractAIGeneralDto : CreateContractAIDTO
         {
             public Guid? SenderId { get; set; }
+            [Required]
 
             public ParticipantEnum SenderType { get; set; }
 
+            [Required]
             public ParticipantEnum ReceiverType { get; set; }
             public Guid? ReceiverId { get; set; }
             public CreateReceiverCompany? ReceiverCompany { get; set; }
