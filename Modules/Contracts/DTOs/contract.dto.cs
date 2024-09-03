@@ -9,7 +9,7 @@ public class ContractDto
     {
         public Guid ContractId { get; set; }
         public string? Content { get; set; }
-        public Guid ContractTypeId { get; set; }
+        public ContractTypeDto.ContractTypeResponseDTO ContractType { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public int? NumClauses { get; set; }
@@ -23,7 +23,7 @@ public class ContractDto
         public List<ContractParticipantDTO.ContractParticipantResponseDTO> ContractParticipants { get; set; }
     }   
     
-    public class CreateContractDTO
+ public class CreateContractDTO
     {
         public Guid ContractTypeId { get; set; }
         public DateTime StartDate { get; set; }
