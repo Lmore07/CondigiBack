@@ -10,6 +10,59 @@ namespace CondigiBack.Modules.Contracts.Services;
 
 public class ContractParticipantService(AppDBContext appDbContext)
 {
+    public async Task<GeneralResponse<bool>> AddCompanyToContract(ContractParticipantDTO.AddCompanyToContractDTO payload)
+    {
+        var contract = await appDbContext.Contracts.Include(contract => contract.ContractParticipants)
+            .FirstOrDefaultAsync(c => c.Id == payload.ContractId);
+        if (contract == null)
+        {
+            return new ErrorResponse<bool>
+            {
+                StatusCode = StatusCodes.Status404NotFound,
+                Message = "Contrato no encontrado"
+            };
+        }
+        
+        var companyExists = await appDbContext.Companies.AnyAsync(c => c.Id == payload.CompanyId);
+        
+        if (!companyExists)
+        {
+            return new ErrorResponse<bool>
+            {
+                StatusCode = StatusCodes.Status404NotFound,
+                Message = "Compañia no encontrada"
+            };
+        }
+
+
+        var contractParticipantExists = await appDbContext.ContractParticipants
+            .FirstOrDefaultAsync(cp => cp.ContractId == payload.ContractId && cp.CompanyId == payload.CompanyId);
+
+        if (contractParticipantExists != null)
+        {
+            await appDbContext.ContractParticipants
+                .Where(cp => cp.Id == contractParticipantExists.Id)
+                .ForEachAsync(cp => cp.Status = true);
+
+            await appDbContext.SaveChangesAsync();
+            return new StandardResponse<bool>(true, "Usuario agregado al contrato", StatusCodes.Status200OK);
+        }
+
+        var contractParticipant = new ContractParticipant
+        {
+            ContractId = payload.ContractId,
+            Role = RoleParticipantEnum.Receiver,
+            Status = true,
+            CompanyId = payload.CompanyId,
+            Signed = false
+        };
+
+        await appDbContext.ContractParticipants.AddAsync(contractParticipant);
+        await appDbContext.SaveChangesAsync();
+
+        return new StandardResponse<bool>(true, "Usuario agregado al contrato", StatusCodes.Status200OK);
+    }
+
     public async Task<GeneralResponse<bool>> AddUserToContract(ContractParticipantDTO.AddUserToContractDTO payload)
     {
         var contract = await appDbContext.Contracts.Include(contract => contract.ContractParticipants)
@@ -23,8 +76,8 @@ public class ContractParticipantService(AppDBContext appDbContext)
             };
         }
 
-        var user = await appDbContext.Users.FirstOrDefaultAsync(u => u.Email == payload.Email);
-        if (user == null)
+        var userExists = await appDbContext.Users.AnyAsync(u => u.Id == payload.UserId);
+        if (!userExists)
         {
             return new ErrorResponse<bool>
             {
@@ -34,12 +87,12 @@ public class ContractParticipantService(AppDBContext appDbContext)
         }
 
         var contractParticipantExists = await appDbContext.ContractParticipants
-            .AnyAsync(cp => cp.ContractId == payload.ContractId && cp.UserId == user.Id);
+            .Where(cp => cp.ContractId == payload.ContractId && cp.UserId == payload.UserId).FirstOrDefaultAsync();
 
-        if (contractParticipantExists)
+        if (contractParticipantExists != null)
         {
             await appDbContext.ContractParticipants
-                .Where(cp => cp.ContractId == payload.ContractId && cp.UserId == user.Id)
+                .Where(cp => cp.Id == contractParticipantExists.Id)
                 .ForEachAsync(cp => cp.Status = true);
 
             await appDbContext.SaveChangesAsync();
@@ -49,10 +102,9 @@ public class ContractParticipantService(AppDBContext appDbContext)
         var contractParticipant = new ContractParticipant
         {
             ContractId = payload.ContractId,
-            UserId = user.Id,
             Role = RoleParticipantEnum.Receiver,
             Status = true,
-            CompanyId = payload.CompanyId,
+            UserId = payload.UserId,
             Signed = false
         };
 

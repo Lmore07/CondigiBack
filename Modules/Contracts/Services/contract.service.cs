@@ -57,6 +57,9 @@ public class ContractService(AppDBContext appDbContext)
     public async Task<GeneralResponse<ContractDto.ContractResponseDTO>> GetContractById(Guid contractId)
     {
         var contract = await appDbContext.Contracts.Include(contract => contract.ContractParticipants)
+            .ThenInclude(contractParticipant => contractParticipant.User).ThenInclude(user => user!.Person)
+            .Include(contract => contract.ContractParticipants)
+            .ThenInclude(contractParticipant => contractParticipant.Company)
             .FirstOrDefaultAsync(c => c.Id == contractId);
         if (contract == null)
         {
@@ -91,7 +94,22 @@ public class ContractService(AppDBContext appDbContext)
                     Signed = cp.Signed,
                     Role = cp.Role,
                     Status = cp.Status,
-                    ContractId = cp.ContractId
+                    ContractId = cp.ContractId,
+                    User = cp.UserId != null
+                        ? new ContractParticipantDTO.UserDto
+                        {
+                            Id = cp.UserId.Value,
+                            FirstName = cp.User!.Person!.FirstName,
+                            LastName = cp.User!.Person!.LastName
+                        }
+                        : null,
+                    Company = cp.CompanyId != null
+                        ? new ContractParticipantDTO.CompanyDto
+                        {
+                            Id = cp.CompanyId.Value,
+                            Name = cp.Company!.Name
+                        }
+                        : null
                 }).Where(cp => cp.Status).ToList()
         };
 

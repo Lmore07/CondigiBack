@@ -12,12 +12,20 @@ namespace CondigiBack.Modules.Contracts.Controllers;
 [ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status500InternalServerError)]
 public class ContractParticipantController(ContractParticipantService service) : Controller
 {
+    [HttpPost("add-company")]
+    [ProducesResponseType<StandardResponse<bool>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status404NotFound)]
+    [EndpointSummary("Add company to contract")]
+    public async Task<IActionResult> AddUserToContract([FromBody] ContractParticipantDTO.AddCompanyToContractDTO payload){
+        var response = await service.AddCompanyToContract(payload);
+        return StatusCode(response.StatusCode, response);
+    }
+    
     [HttpPost("add-user")]
     [ProducesResponseType<StandardResponse<bool>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status404NotFound)]
     [EndpointSummary("Add user to contract")]
-    public async Task<IActionResult> AddUserToContract([FromBody] ContractParticipantDTO.AddUserToContractDTO payload)
-    {
+    public async Task<IActionResult> AddUserToContract([FromBody] ContractParticipantDTO.AddUserToContractDTO payload){
         var response = await service.AddUserToContract(payload);
         return StatusCode(response.StatusCode, response);
     }
