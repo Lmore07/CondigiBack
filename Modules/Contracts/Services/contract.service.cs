@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using CondigiBack.Contexts;
 using CondigiBack.Libs.Enums;
@@ -48,15 +49,15 @@ public class ContractService(AppDBContext appDbContext)
                 CreatedAt = c.ContractType.CreatedAt,
                 UpdatedAt = c.ContractType.UpdatedAt,
             },
-            StartDate = c.StartDate.ToString("dddd, MMMM yyyy"),
-            EndDate = c.EndDate.ToString("dddd, MMMM yyyy"),
+            StartDate = c.StartDate.ToString("dd 'de' MMMM 'del' yyyy", new CultureInfo("es-ES")),
+            EndDate = c.EndDate.ToString("dd 'de' MMMM 'del' yyyy", new CultureInfo("es-ES")),
             NumClauses = c.NumClauses,
             PaymentAmount = c.PaymentAmount,
             PaymentFrequency = c.PaymentFrequency,
             Status = c.Status,
-            CreatedAt = c.CreatedAt.ToString("dddd, MMMM yyyy"),
+            CreatedAt = c.CreatedAt.ToString("dd 'de' MMMM 'del' yyyy", new CultureInfo("es-ES")),
             CreatedBy = c.CreatedBy,
-            UpdatedAt = c.UpdatedAt.ToString("dddd, MMMM yyyy"),
+            UpdatedAt = c.UpdatedAt.ToString("dd 'de' MMMM 'del' yyyy", new CultureInfo("es-ES")),
             UpdatedBy = c.UpdatedBy
         }).ToList();
 
@@ -95,14 +96,14 @@ public class ContractService(AppDBContext appDbContext)
             Content = contract.Content != null
                 ? Encoding.UTF8.GetString(Convert.FromBase64String(contract.Content))
                 : null,
-            StartDate = contract.StartDate.ToString("dddd, MMMM yyyy"),
-            EndDate = contract.EndDate.ToString("dddd, MMMM yyyy"),
+            StartDate = contract.StartDate.ToString("dd 'de' MMMM 'del' yyyy", new CultureInfo("es-ES")),
+            EndDate = contract.EndDate.ToString("dd 'de' MMMM 'del' yyyy", new CultureInfo("es-ES")),
             NumClauses = contract.NumClauses,
             PaymentAmount = contract.PaymentAmount,
             PaymentFrequency = contract.PaymentFrequency,
             Status = contract.Status,
-            CreatedAt = contract.CreatedAt.ToString("dddd, MMMM yyyy"),
-            UpdatedAt = contract.UpdatedAt.ToString("dddd, MMMM yyyy"),
+            CreatedAt = contract.CreatedAt.ToString("dd 'de' MMMM 'del' yyyy", new CultureInfo("es-ES")),
+            UpdatedAt = contract.UpdatedAt.ToString("dd 'de' MMMM 'del' yyyy", new CultureInfo("es-ES")),
             CreatedBy = contract.CreatedBy,
             UpdatedBy = contract.UpdatedBy,
             ContractParticipants = contract.ContractParticipants.Select(cp =>
