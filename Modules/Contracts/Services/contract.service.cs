@@ -18,6 +18,7 @@ public class ContractService(AppDBContext appDbContext)
         var contracts = await appDbContext.Contracts
             .Where(c => (!status.HasValue || c.Status == status) &&
                         c.ContractParticipants.Any(cp => cp.UserId == userId))
+            .Include(c => c.ContractType)
             .Skip((currentPage - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -37,16 +38,23 @@ public class ContractService(AppDBContext appDbContext)
         var contractsResponse = contracts.Select(c => new ContractDto.ContractResponseDTO
         {
             ContractId = c.Id,
-            ContractTypeId = c.ContractTypeId,
+            ContractType = new ContractTypeDto.ContractTypeResponseDTO
+            {
+                ContractTypeId = c.ContractType.Id,
+                Name = c.ContractType.Name,
+                Description = c.ContractType.Description,
+                CreatedAt = c.ContractType.CreatedAt,
+                UpdatedAt = c.ContractType.UpdatedAt,
+            },
             StartDate = c.StartDate,
             EndDate = c.EndDate,
             NumClauses = c.NumClauses,
             PaymentAmount = c.PaymentAmount,
             PaymentFrequency = c.PaymentFrequency,
             Status = c.Status,
-            CreatedAt = c.CreatedAt,
+            CreatedAt = Convert.ToDateTime(c.CreatedAt.ToString("dddd, MMMM yyyy")),
             CreatedBy = c.CreatedBy,
-            UpdatedAt = c.UpdatedAt,
+            UpdatedAt = Convert.ToDateTime(c.UpdatedAt.ToString("dddd, MMMM yyyy")),
             UpdatedBy = c.UpdatedBy
         }).ToList();
 
@@ -60,6 +68,7 @@ public class ContractService(AppDBContext appDbContext)
             .ThenInclude(contractParticipant => contractParticipant.User).ThenInclude(user => user!.Person)
             .Include(contract => contract.ContractParticipants)
             .ThenInclude(contractParticipant => contractParticipant.Company)
+            .Include(contract => contract.ContractType)
             .FirstOrDefaultAsync(c => c.Id == contractId);
         if (contract == null)
         {
@@ -73,7 +82,14 @@ public class ContractService(AppDBContext appDbContext)
         var contractResponse = new ContractDto.ContractResponseDTO
         {
             ContractId = contract.Id,
-            ContractTypeId = contract.ContractTypeId,
+            ContractType = new ContractTypeDto.ContractTypeResponseDTO
+            {
+                ContractTypeId = contract.ContractType.Id,
+                Name = contract.ContractType.Name,
+                Description = contract.ContractType.Description,
+                CreatedAt = contract.ContractType.CreatedAt,
+                UpdatedAt = contract.ContractType.UpdatedAt,
+            },
             Content = contract.Content != null
                 ? Encoding.UTF8.GetString(Convert.FromBase64String(contract.Content))
                 : null,
@@ -83,9 +99,9 @@ public class ContractService(AppDBContext appDbContext)
             PaymentAmount = contract.PaymentAmount,
             PaymentFrequency = contract.PaymentFrequency,
             Status = contract.Status,
-            CreatedAt = contract.CreatedAt,
+            CreatedAt = Convert.ToDateTime(contract.CreatedAt.ToString("dddd, MMMM yyyy")),
             CreatedBy = contract.CreatedBy,
-            UpdatedAt = contract.UpdatedAt,
+            UpdatedAt = Convert.ToDateTime(contract.UpdatedAt.ToString("dddd, MMMM yyyy")),
             UpdatedBy = contract.UpdatedBy,
             ContractParticipants = contract.ContractParticipants.Select(cp =>
                 new ContractParticipantDTO.ContractParticipantResponseDTO
@@ -183,7 +199,23 @@ public class ContractService(AppDBContext appDbContext)
             };
         }
 
-        contract.ContractTypeId = contractDto.ContractTypeId ?? contract.ContractTypeId;
+        if (contractDto.ContractTypeId != null)
+        {
+            var contractType = await appDbContext.ContractTypes.FirstOrDefaultAsync(ct =>
+                ct.Id == contractDto.ContractTypeId);
+
+            if (contractType == null)
+            {
+                return new ErrorResponse<bool>
+                {
+                    StatusCode = StatusCodes.Status404NotFound,
+                    Message = "No se encontró el tipo de contrato indicado"
+                };
+            }
+            
+            contract.ContractTypeId = contractDto.ContractTypeId.Value;
+        }
+
         contract.StartDate = contractDto.StartDate?.ToUniversalTime() ?? contract.StartDate;
         contract.EndDate = contractDto.EndDate?.ToUniversalTime() ?? contract.EndDate;
         contract.NumClauses = contractDto.NumClauses ?? contract.NumClauses;
