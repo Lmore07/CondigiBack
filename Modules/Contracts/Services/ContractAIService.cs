@@ -9,6 +9,7 @@ using CondigiBack.Modules.Contracts.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
+using System.Text;
 using static CondigiBack.Modules.Contracts.DTOs.ContractAIDTO;
 using static CondigiBack.Modules.Contracts.DTOs.ContractAIDTO.CreateReceiverCompany;
 
@@ -145,7 +146,7 @@ namespace CondigiBack.Modules.Contracts.Services
                     NumClauses = payload.NumClauses,
                     PaymentAmount = payload.PaymentAmount,
                     PaymentFrequency = payload.PaymentFrequency,
-                    Content = content,
+                    Content = Convert.ToBase64String(Encoding.UTF8.GetBytes(content)),
                     Status = StatusContractEnum.Pending,
                     CreatedAt = DateTime.UtcNow,
                     CreatedBy = userId,

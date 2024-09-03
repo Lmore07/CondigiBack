@@ -146,9 +146,75 @@ namespace CondigiBack.Modules.Users.Services
             {
                 CompanyId = p.Id,
                 CompanyName = p.Name,
-                Status = p.Status
+                Status = p.Status,
+                RUC = p.RUC,
+                Phone = p.Phone,
+                Email = p.Email,
+                Address = p.Address,
+                ParishId = p.ParishId
             }).ToList();
             return new StandardResponse<List<CompanyDTO.CompaniesByUserResponseDTO>>(companiesResponse, "Compañías encontradas", 200);
+        }
+        
+        public async Task<GeneralResponse<bool>> UpdateUser(Guid userId, UpdateUserDto updateUserDto)
+        {
+            var user = await _dbContext.Users.Include(user => user.Person).FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+            {
+                return new ErrorResponse<bool>("Usuario no encontrado", "Usuario no encontrado", 404);
+            }
+            if (updateUserDto.Phone != null)
+            {
+                user.Person.Phone = updateUserDto.Phone;
+            }
+            if (updateUserDto.ParishId != null)
+            {
+                user.Person.ParishId = updateUserDto.ParishId.Value;
+            }
+            if (updateUserDto.Address != null)
+            {
+                user.Person.Address = updateUserDto.Address;
+            }
+            if (updateUserDto.FirstName != null)
+            {
+                user.Person.FirstName = updateUserDto.FirstName;
+            }
+            if (updateUserDto.LastName != null)
+            {
+                user.Person.LastName = updateUserDto.LastName;
+            }
+            if (updateUserDto.email != null)
+            {
+                user.Email = updateUserDto.email;
+            }
+            await _dbContext.SaveChangesAsync();
+            return new StandardResponse<bool>(true, "Usuario actualizado correctamente", 200);
+        }
+
+        public async Task<GeneralResponse<GetUserDto>> GetUser(Guid userId)
+        {
+            var user = await _dbContext.Users.Include(user => user.Person).ThenInclude(person => person.Parish)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+            {
+                return new ErrorResponse<GetUserDto>("Usuario no encontrado", "Usuario no encontrado", 404);
+            }
+
+            var userResponse = new GetUserDto
+            {
+                Id = user.Id,
+                Address = user.Person.Address,
+                FirstName = user.Person.FirstName,
+                LastName = user.Person.LastName,
+                Email = user.Email,
+                Parish = new ParishResponseDTO()
+                {
+                    Id = user.Person.Parish.IdParish,
+                    Name = user.Person.Parish.NameParish
+                },
+                Phone = user.Person.Phone
+            };
+            return new StandardResponse<GetUserDto>(userResponse, "Usuario encontrado", 200);
         }
     }
 }

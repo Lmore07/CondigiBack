@@ -1,3 +1,4 @@
+using System.Text;
 using CondigiBack.Contexts;
 using CondigiBack.Libs.Enums;
 using CondigiBack.Libs.Interfaces;
@@ -15,7 +16,8 @@ public class ContractService(AppDBContext appDbContext)
         int pageSize, Guid userId, StatusContractEnum? status)
     {
         var contracts = await appDbContext.Contracts
-            .Where(c => (!status.HasValue || c.Status == status) && c.ContractParticipants.Any(cp => cp.UserId == userId))
+            .Where(c => (!status.HasValue || c.Status == status) &&
+                        c.ContractParticipants.Any(cp => cp.UserId == userId))
             .Skip((currentPage - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -55,6 +57,9 @@ public class ContractService(AppDBContext appDbContext)
     public async Task<GeneralResponse<ContractDto.ContractResponseDTO>> GetContractById(Guid contractId)
     {
         var contract = await appDbContext.Contracts.Include(contract => contract.ContractParticipants)
+            .ThenInclude(contractParticipant => contractParticipant.User).ThenInclude(user => user!.Person)
+            .Include(contract => contract.ContractParticipants)
+            .ThenInclude(contractParticipant => contractParticipant.Company)
             .FirstOrDefaultAsync(c => c.Id == contractId);
         if (contract == null)
         {
@@ -69,7 +74,9 @@ public class ContractService(AppDBContext appDbContext)
         {
             ContractId = contract.Id,
             ContractTypeId = contract.ContractTypeId,
-            Content = contract.Content,
+            Content = contract.Content != null
+                ? Encoding.UTF8.GetString(Convert.FromBase64String(contract.Content))
+                : null,
             StartDate = contract.StartDate,
             EndDate = contract.EndDate,
             NumClauses = contract.NumClauses,
@@ -87,7 +94,22 @@ public class ContractService(AppDBContext appDbContext)
                     Signed = cp.Signed,
                     Role = cp.Role,
                     Status = cp.Status,
-                    ContractId = cp.ContractId
+                    ContractId = cp.ContractId,
+                    User = cp.UserId != null
+                        ? new ContractParticipantDTO.UserDto
+                        {
+                            Id = cp.UserId.Value,
+                            FirstName = cp.User!.Person!.FirstName,
+                            LastName = cp.User!.Person!.LastName
+                        }
+                        : null,
+                    Company = cp.CompanyId != null
+                        ? new ContractParticipantDTO.CompanyDto
+                        {
+                            Id = cp.CompanyId.Value,
+                            Name = cp.Company!.Name
+                        }
+                        : null
                 }).Where(cp => cp.Status).ToList()
         };
 
@@ -102,8 +124,8 @@ public class ContractService(AppDBContext appDbContext)
         {
             Id = Guid.NewGuid(),
             ContractTypeId = contractDto.ContractTypeId,
-            StartDate = contractDto.StartDate,
-            EndDate = contractDto.EndDate,
+            StartDate = contractDto.StartDate.ToUniversalTime(),
+            EndDate = contractDto.EndDate.ToUniversalTime(),
             NumClauses = contractDto.NumClauses,
             PaymentAmount = contractDto.PaymentAmount,
             PaymentFrequency = contractDto.PaymentFrequency,
@@ -161,18 +183,18 @@ public class ContractService(AppDBContext appDbContext)
             };
         }
 
-        Console.WriteLine(contract);
-
         contract.ContractTypeId = contractDto.ContractTypeId ?? contract.ContractTypeId;
-        contract.StartDate = contractDto.StartDate ?? contract.StartDate;
-        contract.EndDate = contractDto.EndDate ?? contract.EndDate;
+        contract.StartDate = contractDto.StartDate?.ToUniversalTime() ?? contract.StartDate;
+        contract.EndDate = contractDto.EndDate?.ToUniversalTime() ?? contract.EndDate;
         contract.NumClauses = contractDto.NumClauses ?? contract.NumClauses;
         contract.PaymentAmount = contractDto.PaymentAmount ?? contract.PaymentAmount;
         contract.PaymentFrequency = contractDto.PaymentFrequency ?? contract.PaymentFrequency;
         contract.Status = contractDto.Status ?? contract.Status;
         contract.UpdatedAt = DateTime.UtcNow;
         contract.UpdatedBy = userId;
-        contract.Content = contractDto.Content ?? contract.Content;
+        contract.Content = contractDto.Content != null
+            ? Convert.ToBase64String(Encoding.UTF8.GetBytes(contractDto.Content))
+            : contract.Content;
 
         appDbContext.Contracts.Update(contract);
         await appDbContext.SaveChangesAsync();
@@ -199,5 +221,4 @@ public class ContractService(AppDBContext appDbContext)
 
         return new StandardResponse<bool>(true, "Estado del contrato actualizado", StatusCodes.Status200OK);
     }
-
 }

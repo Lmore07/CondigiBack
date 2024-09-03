@@ -45,5 +45,27 @@ namespace CondigiBack.Modules.Users.Controllers
             var response = await _userService.GetCompaniesByUser(userId);
             return StatusCode(response.StatusCode, response);
         }
+        
+        [ProducesResponseType<StandardResponse<bool>>(StatusCodes.Status200OK)]
+        [ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status404NotFound)]
+        [EndpointSummary("Update user")]
+        [HttpPatch("update")]
+        public async Task<IActionResult> UpdateUser([FromBody] UserDTO.UpdateUserDto updateUserDto)
+        {
+            var userId = User.GetUserId();
+            var response = await _userService.UpdateUser(userId, updateUserDto);
+            return StatusCode(response.StatusCode, response);
+        }
+        
+        [ProducesResponseType<StandardResponse<GetUserDto>>(StatusCodes.Status200OK)]
+        [ProducesResponseType<ErrorResponse<object>>(StatusCodes.Status404NotFound)]
+        [EndpointSummary("Get user")]
+        [HttpGet("my-profile")]
+        public async Task<IActionResult> GetUser()
+        {
+            var userId = User.GetUserId();
+            var response = await _userService.GetUser(userId);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }
