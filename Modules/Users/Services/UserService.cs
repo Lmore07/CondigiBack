@@ -146,7 +146,12 @@ namespace CondigiBack.Modules.Users.Services
             {
                 CompanyId = p.Id,
                 CompanyName = p.Name,
-                Status = p.Status
+                Status = p.Status,
+                RUC = p.RUC,
+                Phone = p.Phone,
+                Email = p.Email,
+                Address = p.Address,
+                ParishId = p.ParishId
             }).ToList();
             return new StandardResponse<List<CompanyDTO.CompaniesByUserResponseDTO>>(companiesResponse, "Compañías encontradas", 200);
         }
