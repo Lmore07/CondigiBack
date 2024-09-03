@@ -9,7 +9,7 @@ public class GeminiService
     private readonly HttpClient _httpClient;
     private readonly string _apiKey;
 
-    public GeminiService(HttpClient httpClient, IConfiguration configuration)
+    public GeminiService(HttpClient httpClient)
     {
         _httpClient = httpClient;
         _apiKey = Environment.GetEnvironmentVariable("API_KEY_GEMINI");

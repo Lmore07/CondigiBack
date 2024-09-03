@@ -16,6 +16,7 @@ using System.Net;
 using System.Text;
 using CondigiBack.Modules.Contracts.Services;
 using Microsoft.OpenApi.Models;
+using CondigiBack.Libs.Services;
 
 DotEnv.Load();
 
@@ -83,6 +84,7 @@ builder.Services.AddScoped<ContractTypeService>();
 builder.Services.AddScoped<ContractParticipantService>();
 builder.Services.AddScoped<ContractAIService>();
 builder.Services.AddHttpClient<GeminiService>();
+builder.Services.AddHttpClient<EmailService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

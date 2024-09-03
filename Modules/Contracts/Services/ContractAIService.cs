@@ -19,11 +19,13 @@ namespace CondigiBack.Modules.Contracts.Services
     {
         private readonly AppDBContext _context;
         private readonly GeminiService _geminiService;
+        private readonly EmailService _emailService;
 
-        public ContractAIService(AppDBContext context, GeminiService geminiService)
+        public ContractAIService(AppDBContext context, GeminiService geminiService, EmailService emailService)
         {
             _context = context;
             _geminiService = geminiService;
+            _emailService = emailService;
         }
 
         public async Task<GeneralResponse<List<ContractAIDTO.GetCompaniesDTO>>> GetCompanies(Guid userId)
@@ -94,8 +96,10 @@ namespace CondigiBack.Modules.Contracts.Services
             Guid userId)
         {
             var user = await _context.Users.Include(u => u.Person).FirstOrDefaultAsync(u => u.Id == userId);
-
+            Company receiverCompany = null;
+            User receiverPerson = null;
             Company senderCompany = null;
+            User senderUser = null;
             if (payload.SenderType == ParticipantEnum.Company)
             {
                 senderCompany = await _context.Companies.FindAsync(payload.SenderId);
@@ -103,19 +107,26 @@ namespace CondigiBack.Modules.Contracts.Services
                     return new ErrorResponse<Guid>("La empresa remitente no existe", "Empresa no encontrada",
                         StatusCodes.Status404NotFound);
             }
+            else
+            {
+                senderUser = await _context.Users.Include(u => u.Person).FirstOrDefaultAsync(u => u.Id == userId);
+                if (senderUser == null)
+                    return new ErrorResponse<Guid>("La persona remitente no existe", "Persona no encontrada",
+                        StatusCodes.Status404NotFound);
+            }
 
             if (payload.ReceiverId != null)
             {
                 if (payload.ReceiverType == ParticipantEnum.Company)
                 {
-                    var receiverCompany = await _context.Companies.FindAsync(payload.ReceiverId);
+                    receiverCompany = await _context.Companies.FindAsync(payload.ReceiverId);
                     if (receiverCompany == null)
                         return new ErrorResponse<Guid>("La empresa receptora no existe", "Empresa no encontrada",
                             StatusCodes.Status404NotFound);
                 }
                 else
                 {
-                    var receiverPerson = await _context.Users.FirstOrDefaultAsync(u => u.Id == payload.ReceiverId);
+                    receiverPerson = await _context.Users.FirstOrDefaultAsync(u => u.Id == payload.ReceiverId);
                     if (receiverPerson == null)
                     {
                         return new ErrorResponse<Guid>("La persona receptora no existe", "Persona no encontrada",
@@ -201,7 +212,17 @@ namespace CondigiBack.Modules.Contracts.Services
                 _context.ContractParticipants.AddRange(participants);
                 await _context.SaveChangesAsync();
 
+                //Enviar correo de notificación
+                if (payload.ReceiverType == ParticipantEnum.Company)
+                {
+                    await _emailService.SendEmailAsync(senderCompany.Email, senderCompany.Name, payload.ReceiverCompany?.Email ?? receiverCompany?.Email, payload.ReceiverCompany?.Name ?? receiverCompany?.Name);
+                }
+                else
+                {
+                    await _emailService.SendEmailAsync(senderUser.Email, senderUser.Person.FirstName + " " + senderUser.Person.LastName, receiverPerson.Email ?? payload.ReceiverPerson.Email, receiverPerson?.Email ?? payload.ReceiverPerson?.Email);
+                }
                 await transaction.CommitAsync();
+
 
                 return new StandardResponse<Guid>(contract.Id, "Contrato creado", StatusCodes.Status201Created);
             }
@@ -271,7 +292,7 @@ namespace CondigiBack.Modules.Contracts.Services
                         }
                     };
                 }
-                
+
                 return payload.SenderType == ParticipantEnum.Company
                     ? new GeneratePrompt().GenerateContent(null, senderCompany, receiverPerson.Person, null,
                         contractType,
