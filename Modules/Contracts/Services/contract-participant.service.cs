@@ -60,6 +60,8 @@ public class ContractParticipantService(AppDBContext appDbContext)
         await appDbContext.ContractParticipants.AddAsync(contractParticipant);
         await appDbContext.SaveChangesAsync();
 
+        await ChangeStatusContract(payload.ContractId);
+
         return new StandardResponse<bool>(true, "Usuario agregado al contrato", StatusCodes.Status200OK);
     }
 
@@ -110,6 +112,8 @@ public class ContractParticipantService(AppDBContext appDbContext)
 
         await appDbContext.ContractParticipants.AddAsync(contractParticipant);
         await appDbContext.SaveChangesAsync();
+
+        await ChangeStatusContract(payload.ContractId);
 
         return new StandardResponse<bool>(true, "Usuario agregado al contrato", StatusCodes.Status200OK);
     }
@@ -166,6 +170,21 @@ public class ContractParticipantService(AppDBContext appDbContext)
         contractParticipant.Signed = !contractParticipant.Signed;
         await appDbContext.SaveChangesAsync();
 
+        await ChangeStatusContract(contractId);
+
+        return new StandardResponse<bool>(true, "Firma actualizada", StatusCodes.Status200OK);
+    }
+
+    private async Task<bool> ChangeStatusContract(Guid contractId)
+    {
+        var contract = await appDbContext.Contracts.Include(c => c.ContractParticipants)
+            .FirstOrDefaultAsync(c => c.Id == contractId);
+
+        if (contract == null)
+        {
+            return false;
+        }
+
         var allSigned = contract.ContractParticipants.All(cp => cp.Signed);
 
         if (!allSigned)
@@ -176,12 +195,12 @@ public class ContractParticipantService(AppDBContext appDbContext)
                 await appDbContext.SaveChangesAsync();
             }
 
-            return new StandardResponse<bool>(true, "Firma actualizada", StatusCodes.Status200OK);
+            return true;
         }
 
         contract.Status = StatusContractEnum.Approved;
         await appDbContext.SaveChangesAsync();
 
-        return new StandardResponse<bool>(true, "Firma actualizada", StatusCodes.Status200OK);
+        return true;
     }
 }
