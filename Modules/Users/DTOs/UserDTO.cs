@@ -2,6 +2,8 @@
 
 using CondigiBack.Modules.Auth.DTOs;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.InteropServices;
+using CondigiBack.Modules.Geography.DTOs;
 
 namespace CondigiBack.Modules.Users.DTOs
 {
@@ -42,6 +44,36 @@ namespace CondigiBack.Modules.Users.DTOs
             public AuthDTO.UserRegistrationDto UserRegistrationDto { get; set; }
         }
 
+        public class UpdateUserDto
+        {
+
+            [MinLength(10, ErrorMessage = "El teléfono debe tener mínimo 10 caracteres")]
+            [MaxLength(10, ErrorMessage = "El teléfono debe tener máximo 10 caracteres")]
+            [RegularExpression(@"^[0-9]*$", ErrorMessage = "El teléfono debe ser numérico")]
+            public string? Phone { get; set; }
+
+            [RegularExpression(@"^[0-9]*$", ErrorMessage = "La parroquia debe ser numérica")]
+            public int? ParishId { get; set; }
+
+            public string? Address { get; set; }
+            
+            public string? FirstName { get; set; }
+            
+            public string? LastName { get; set; }
+            
+            public string? email { get; set; }
+        }
+        
+        public class GetUserDto
+        {
+            public Guid Id { get; set; }
+            public string? FirstName { get; set; }
+            public string? LastName { get; set; }
+            public string? Email { get; set; }
+            public string? Phone { get; set; }
+            public string? Address { get; set; }
+            public GeographyDTO.ParishResponseDTO? Parish { get; set; }
+        }
         
     }
 }
