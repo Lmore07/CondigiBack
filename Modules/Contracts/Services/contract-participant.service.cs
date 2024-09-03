@@ -10,7 +10,8 @@ namespace CondigiBack.Modules.Contracts.Services;
 
 public class ContractParticipantService(AppDBContext appDbContext)
 {
-    public async Task<GeneralResponse<bool>> AddCompanyToContract(ContractParticipantDTO.AddCompanyToContractDTO payload)
+    public async Task<GeneralResponse<bool>> AddCompanyToContract(
+        ContractParticipantDTO.AddCompanyToContractDTO payload)
     {
         var contract = await appDbContext.Contracts.Include(contract => contract.ContractParticipants)
             .FirstOrDefaultAsync(c => c.Id == payload.ContractId);
@@ -22,9 +23,9 @@ public class ContractParticipantService(AppDBContext appDbContext)
                 Message = "Contrato no encontrado"
             };
         }
-        
+
         var companyExists = await appDbContext.Companies.AnyAsync(c => c.Id == payload.CompanyId);
-        
+
         if (!companyExists)
         {
             return new ErrorResponse<bool>
@@ -33,7 +34,6 @@ public class ContractParticipantService(AppDBContext appDbContext)
                 Message = "Compañia no encontrada"
             };
         }
-
 
         var contractParticipantExists = await appDbContext.ContractParticipants
             .FirstOrDefaultAsync(cp => cp.ContractId == payload.ContractId && cp.CompanyId == payload.CompanyId);
@@ -136,18 +136,50 @@ public class ContractParticipantService(AppDBContext appDbContext)
 
     public async Task<GeneralResponse<bool>> UpdateSigned(Guid userId, Guid contractId)
     {
+        var contract = await appDbContext.Contracts.Include(c => c.ContractParticipants)
+            .FirstOrDefaultAsync(c => c.Id == contractId);
+
+        if (contract == null)
+        {
+            return new ErrorResponse<bool>
+            {
+                StatusCode = StatusCodes.Status404NotFound,
+                Message = "Contrato no encontrado"
+            };
+        }
+
         var contractParticipant = await appDbContext.ContractParticipants
-            .FirstOrDefaultAsync(cp => cp.UserId == userId && cp.ContractId == contractId);
+            .FirstOrDefaultAsync(cp => cp.ContractId == contractId &&
+                                       ((cp.Company != null &&
+                                         cp.Company.UserCompanies.Any(uc => uc.UserId == userId)) ||
+                                        userId == cp.UserId));
+
         if (contractParticipant == null)
         {
             return new ErrorResponse<bool>
             {
                 StatusCode = StatusCodes.Status404NotFound,
-                Message = "Participante no encontrado"
+                Message = "Participantes no encontrados"
             };
         }
 
         contractParticipant.Signed = !contractParticipant.Signed;
+        await appDbContext.SaveChangesAsync();
+
+        var allSigned = contract.ContractParticipants.All(cp => cp.Signed);
+
+        if (!allSigned)
+        {
+            if (contract.Status != StatusContractEnum.Pending)
+            {
+                contract.Status = StatusContractEnum.Pending;
+                await appDbContext.SaveChangesAsync();
+            }
+
+            return new StandardResponse<bool>(true, "Firma actualizada", StatusCodes.Status200OK);
+        }
+
+        contract.Status = StatusContractEnum.Approved;
         await appDbContext.SaveChangesAsync();
 
         return new StandardResponse<bool>(true, "Firma actualizada", StatusCodes.Status200OK);

@@ -17,7 +17,9 @@ public class ContractService(AppDBContext appDbContext)
     {
         var contracts = await appDbContext.Contracts
             .Where(c => (!status.HasValue || c.Status == status) &&
-                        c.ContractParticipants.Any(cp => cp.UserId == userId))
+                        c.ContractParticipants.Any(cp =>
+                            (cp.Company != null && cp.Company.UserCompanies.Any(uc => uc.UserId == userId)) ||
+                            cp.UserId == userId))
             .Include(c => c.ContractType)
             .Skip((currentPage - 1) * pageSize)
             .Take(pageSize)
@@ -46,15 +48,15 @@ public class ContractService(AppDBContext appDbContext)
                 CreatedAt = c.ContractType.CreatedAt,
                 UpdatedAt = c.ContractType.UpdatedAt,
             },
-            StartDate = c.StartDate,
-            EndDate = c.EndDate,
+            StartDate = c.StartDate.ToString("dddd, MMMM yyyy"),
+            EndDate = c.EndDate.ToString("dddd, MMMM yyyy"),
             NumClauses = c.NumClauses,
             PaymentAmount = c.PaymentAmount,
             PaymentFrequency = c.PaymentFrequency,
             Status = c.Status,
-            CreatedAt = Convert.ToDateTime(c.CreatedAt.ToString("dddd, MMMM yyyy")),
+            CreatedAt = c.CreatedAt.ToString("dddd, MMMM yyyy"),
             CreatedBy = c.CreatedBy,
-            UpdatedAt = Convert.ToDateTime(c.UpdatedAt.ToString("dddd, MMMM yyyy")),
+            UpdatedAt = c.UpdatedAt.ToString("dddd, MMMM yyyy"),
             UpdatedBy = c.UpdatedBy
         }).ToList();
 
@@ -93,15 +95,15 @@ public class ContractService(AppDBContext appDbContext)
             Content = contract.Content != null
                 ? Encoding.UTF8.GetString(Convert.FromBase64String(contract.Content))
                 : null,
-            StartDate = contract.StartDate,
-            EndDate = contract.EndDate,
+            StartDate = contract.StartDate.ToString("dddd, MMMM yyyy"),
+            EndDate = contract.EndDate.ToString("dddd, MMMM yyyy"),
             NumClauses = contract.NumClauses,
             PaymentAmount = contract.PaymentAmount,
             PaymentFrequency = contract.PaymentFrequency,
             Status = contract.Status,
-            CreatedAt = Convert.ToDateTime(contract.CreatedAt.ToString("dddd, MMMM yyyy")),
+            CreatedAt = contract.CreatedAt.ToString("dddd, MMMM yyyy"),
+            UpdatedAt = contract.UpdatedAt.ToString("dddd, MMMM yyyy"),
             CreatedBy = contract.CreatedBy,
-            UpdatedAt = Convert.ToDateTime(contract.UpdatedAt.ToString("dddd, MMMM yyyy")),
             UpdatedBy = contract.UpdatedBy,
             ContractParticipants = contract.ContractParticipants.Select(cp =>
                 new ContractParticipantDTO.ContractParticipantResponseDTO
@@ -212,7 +214,7 @@ public class ContractService(AppDBContext appDbContext)
                     Message = "No se encontró el tipo de contrato indicado"
                 };
             }
-            
+
             contract.ContractTypeId = contractDto.ContractTypeId.Value;
         }
 

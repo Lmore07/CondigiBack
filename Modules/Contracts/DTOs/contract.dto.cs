@@ -10,15 +10,15 @@ public class ContractDto
         public Guid ContractId { get; set; }
         public string? Content { get; set; }
         public ContractTypeDto.ContractTypeResponseDTO ContractType { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public string StartDate { get; set; }
+        public string EndDate { get; set; }
         public int? NumClauses { get; set; }
         public decimal? PaymentAmount { get; set; }
         public PaymentFrequencyEnum? PaymentFrequency { get; set; }
         public StatusContractEnum Status { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public string CreatedAt { get; set; }
         public Guid? CreatedBy { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public string UpdatedAt { get; set; }
         public Guid? UpdatedBy { get; set; }
         public List<ContractParticipantDTO.ContractParticipantResponseDTO> ContractParticipants { get; set; }
     }   
