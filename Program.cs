@@ -17,10 +17,15 @@ using System.Text;
 using CondigiBack.Modules.Contracts.Services;
 using Microsoft.OpenApi.Models;
 using CondigiBack.Libs.Services;
+using CloudinaryDotNet;
+using DinkToPdf.Contracts;
+using DinkToPdf;
 
 DotEnv.Load();
 
 var builder = WebApplication.CreateBuilder(args);
+
+Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
 //Create a connection string to the database
 var connectionString = Environment.GetEnvironmentVariable("PostgreDB");
@@ -73,6 +78,25 @@ builder.Services.AddAuthentication(config =>
         };
     }
 );
+
+var cloudinarySettings = new CloudinarySettings
+{
+    CloudName = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME"),
+    ApiKey = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY"),
+    ApiSecret = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET")
+};
+var cloudinary = new Cloudinary(new Account(
+    cloudinarySettings.CloudName,
+    cloudinarySettings.ApiKey,
+    cloudinarySettings.ApiSecret
+));
+
+builder.Services.AddSingleton(cloudinary);
+
+// Registrar servicios para la generación de PDFs y subida a Cloudinary
+builder.Services.AddSingleton<IConverter, SynchronizedConverter>(provider => new SynchronizedConverter(new PdfTools()));
+builder.Services.AddSingleton<PdfGeneratorClass>();
+builder.Services.AddSingleton<CloudinaryUploader>();
 
 // Add services to the container.
 builder.Services.AddScoped<GeographyService>();

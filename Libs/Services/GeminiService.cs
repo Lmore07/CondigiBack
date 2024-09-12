@@ -51,6 +51,18 @@ public class GeminiService
         return result?.candidates?[0]?.content?.parts?[0]?.text;
     }
 
+    public string ExtractInfo(string response, string startDelimiter, string endDelimiter, bool isReceiver = false)
+    {
+        int startIndex = isReceiver ? response.LastIndexOf(startDelimiter) : response.IndexOf(startDelimiter);
+        if (startIndex == -1) return string.Empty;
+        startIndex += startDelimiter.Length;
+
+        int endIndex = response.IndexOf(endDelimiter, startIndex);
+        if (endIndex == -1) return string.Empty;
+
+        return response.Substring(startIndex, endIndex - startIndex).Trim();
+    }
+
     private class GeminiResponse
     {
         public Candidate[] candidates { get; set; }

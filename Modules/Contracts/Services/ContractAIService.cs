@@ -212,17 +212,7 @@ namespace CondigiBack.Modules.Contracts.Services
                 _context.ContractParticipants.AddRange(participants);
                 await _context.SaveChangesAsync();
 
-                //Enviar correo de notificación
-                if (payload.ReceiverType == ParticipantEnum.Company)
-                {
-                    await _emailService.SendEmailAsync(senderCompany.Email, senderCompany.Name, payload.ReceiverCompany?.Email ?? receiverCompany?.Email, payload.ReceiverCompany?.Name ?? receiverCompany?.Name);
-                }
-                else
-                {
-                    await _emailService.SendEmailAsync(senderUser.Email, senderUser.Person.FirstName + " " + senderUser.Person.LastName, receiverPerson.Email ?? payload.ReceiverPerson.Email, receiverPerson?.Email ?? payload.ReceiverPerson?.Email);
-                }
                 await transaction.CommitAsync();
-
 
                 return new StandardResponse<Guid>(contract.Id, "Contrato creado", StatusCodes.Status201Created);
             }

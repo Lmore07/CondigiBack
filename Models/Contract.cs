@@ -51,6 +51,8 @@ namespace CondigiBack.Models
         [Column("updated_by")]
         public Guid? UpdatedBy { get; set; }
 
+        [Column("url_pdf")]
+        public string? UrlPDF { get; set; }
 
         public ContractType ContractType { get; set; }
         
