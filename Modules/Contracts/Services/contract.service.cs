@@ -8,11 +8,31 @@ using CondigiBack.Libs.Utils;
 using CondigiBack.Models;
 using CondigiBack.Modules.Contracts.DTOs;
 using Microsoft.EntityFrameworkCore;
+using DinkToPdf.Contracts;
+using DinkToPdf;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using CondigiBack.Libs.Services;
 
 namespace CondigiBack.Modules.Contracts.Services;
 
-public class ContractService(AppDBContext appDbContext)
+public class ContractService
 {
+    private readonly PdfGeneratorClass pdfGenerator;
+    private readonly CloudinaryUploader cloudinaryUploader;
+    private readonly AppDBContext appDbContext;
+    private readonly GeminiService _geminiService;
+    private readonly EmailService _emailService;
+
+    public ContractService(AppDBContext appDbContext, PdfGeneratorClass pdfGenerator, CloudinaryUploader cloudinaryUploader, GeminiService geminiService, EmailService emailService)
+    {
+        this.appDbContext = appDbContext;
+        this.pdfGenerator = pdfGenerator;
+        this.cloudinaryUploader = cloudinaryUploader;
+        _geminiService = geminiService;
+        _emailService = emailService;
+    }
+
     public async Task<GeneralResponse<List<ContractDto.ContractResponseDTO>>> GetContractsByUser(int currentPage,
         int pageSize, Guid userId, StatusContractEnum? status)
     {
@@ -230,6 +250,31 @@ public class ContractService(AppDBContext appDbContext)
         contract.Content = contractDto.Content != null
             ? Convert.ToBase64String(Encoding.UTF8.GetBytes(contractDto.Content))
             : contract.Content;
+
+        // Generar PDF a partir del contenido en HTML
+        if (contractDto.Content != null)
+        {
+            var pdf = pdfGenerator.GeneratePdf(contractDto.Content, contract.EncryptionKey);
+            var uploadResult = await cloudinaryUploader.UploadPdfToCloudinary(pdf);
+
+            if (uploadResult != null)
+            {
+                contract.UrlPDF = uploadResult.SecureUrl.ToString();
+            }
+            else
+            {
+                contract.UrlPDF = null;
+            }
+        }
+
+        //Obtener información a partir del contenido
+        var response = await _geminiService.GenerateContentAsync(new GeneratePrompt().ExtractInformation(contractDto.Content));
+        var senderName = _geminiService.ExtractInfo(response, "Emisor: ", "<");
+        var senderEmail = _geminiService.ExtractInfo(response, "<", ">");
+        var receiverName = _geminiService.ExtractInfo(response, "Remitente: ", "<", true);
+        var receiverEmail = _geminiService.ExtractInfo(response, "<", ">", true);
+        //Enviar email al receptor y al emisor con la información obtenida
+        await _emailService.SendEmailAsync(senderEmail, senderName, receiverEmail, receiverName, contract.UrlPDF);
 
         appDbContext.Contracts.Update(contract);
         await appDbContext.SaveChangesAsync();

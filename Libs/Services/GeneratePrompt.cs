@@ -64,6 +64,11 @@ namespace CondigiBack.Libs.Services
             return prompt;
         }
 
+        public string ExtractInformation(string content)
+        {
+            return $"Extrae el nombre y correo del emisor y del remitente del siguiente contenido:\n\n{content}\n\n, Recuerda que el contenido puede variar y no decir explicitamente emisor y receptor, pero siempre hablara de ellos ya sea empresa o persona, en base a eso debes analizar el contenido y proporcionar la informacion que se te adjunta a continuación: \n\nFormato de respuesta: Emisor: [Nombre] <[Correo]>, Remitente: [Nombre] <[Correo]>";
+        }
+
         public string GenerateContent(Company? receiverCompany, Company? senderCompany, Person? receiverPerson,
             Person? senderPerson, ContractType contractType,
             ContractAIDTO.ContractAIGeneralDto contract)
@@ -71,7 +76,7 @@ namespace CondigiBack.Libs.Services
             var prompt = $@"
             Genera un contrato de tipo {contractType.Name}, el cual se enfoca en {contractType.Description}.
             Debes hacerlo de forma que el que envia es {contract.SenderType} y el que recibe es {contract.ReceiverType}, con la siguiente información:
-            ";
+            Siempre incluye al menos el nombre y el correo del emisor y del remitente, en este caso:";
 
             if (senderCompany != null)
             {
@@ -92,6 +97,7 @@ namespace CondigiBack.Libs.Services
                 - Dirección: {senderPerson.Address}
                 - Teléfono: {senderPerson.Phone}
                 - Identificación: {senderPerson.Identification}
+                - Email: {senderPerson.User.Email}
                 ";
             }
 
@@ -114,6 +120,7 @@ namespace CondigiBack.Libs.Services
                 - Dirección: {receiverPerson.Address}
                 - Teléfono: {receiverPerson.Phone}
                 - Identificación: {receiverPerson.Identification}
+                - Email: {receiverPerson.User.Email}
                 ";
             }
 

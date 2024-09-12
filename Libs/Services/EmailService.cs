@@ -1,9 +1,5 @@
-using System.Net;
-using System.Net.Mail;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace CondigiBack.Libs.Services
 {
@@ -17,13 +13,14 @@ namespace CondigiBack.Libs.Services
             _apiKey = Environment.GetEnvironmentVariable("API_KEY_BREVO");
         }
 
-        public async Task SendEmailAsync(string from, string nameFrom, string to, string toName)
+        public async Task SendEmailAsync(string from, string nameFrom, string to, string toName, string pdfUrl)
         {
             var body = new
             {
                 templateId = 1,
                 to = new[] { new { email = to, name = toName } },
-                cc = new[] { new { email = from, name = nameFrom } }
+                cc = new[] { new { email = from, name = nameFrom } },
+                attachment = new[] { new { name = "Nuevo_Contrato.pdf", url = pdfUrl } }
             };
             var content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
             var request = new HttpRequestMessage(HttpMethod.Post, "https://api.brevo.com/v3/smtp/email")
