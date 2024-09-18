@@ -78,7 +78,8 @@ public class ContractService
             CreatedAt = c.CreatedAt.ToString("dd 'de' MMMM 'del' yyyy", new CultureInfo("es-ES")),
             CreatedBy = c.CreatedBy,
             UpdatedAt = c.UpdatedAt.ToString("dd 'de' MMMM 'del' yyyy", new CultureInfo("es-ES")),
-            UpdatedBy = c.UpdatedBy
+            UpdatedBy = c.UpdatedBy,
+            UrlPDF = c.UrlPDF,
         }).ToList();
 
         return new PaginatedResponse<List<ContractDto.ContractResponseDTO>>(contractsResponse, StatusCodes.Status200OK,
@@ -126,6 +127,7 @@ public class ContractService
             UpdatedAt = contract.UpdatedAt.ToString("dd 'de' MMMM 'del' yyyy", new CultureInfo("es-ES")),
             CreatedBy = contract.CreatedBy,
             UpdatedBy = contract.UpdatedBy,
+            UrlPDF = contract.UrlPDF,
             ContractParticipants = contract.ContractParticipants.Select(cp =>
                 new ContractParticipantDTO.ContractParticipantResponseDTO
                 {
