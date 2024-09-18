@@ -21,6 +21,7 @@ public class ContractDto
         public string UpdatedAt { get; set; }
         public Guid? UpdatedBy { get; set; }
         public List<ContractParticipantDTO.ContractParticipantResponseDTO> ContractParticipants { get; set; }
+        public string? UrlPDF { get; set; }
     }   
     
  public class CreateContractDTO
