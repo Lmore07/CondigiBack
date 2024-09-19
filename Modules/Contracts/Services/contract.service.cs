@@ -8,10 +8,6 @@ using CondigiBack.Libs.Utils;
 using CondigiBack.Models;
 using CondigiBack.Modules.Contracts.DTOs;
 using Microsoft.EntityFrameworkCore;
-using DinkToPdf.Contracts;
-using DinkToPdf;
-using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
 using CondigiBack.Libs.Services;
 
 namespace CondigiBack.Modules.Contracts.Services;

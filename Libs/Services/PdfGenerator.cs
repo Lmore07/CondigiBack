@@ -31,9 +31,6 @@ namespace CondigiBack.Libs.Services
                         MarginRight = 71
                     };
                     PdfDocument pdfDocument = PdfGenerator.GeneratePdf(htmlContent, config);
-
-                    pdfDocument.SecuritySettings.UserPassword = password;
-                    pdfDocument.SecuritySettings.OwnerPassword = password;
                     pdfDocument.SecuritySettings.PermitPrint = true;
                     pdfDocument.SecuritySettings.PermitModifyDocument = false;
                     pdfDocument.SecuritySettings.PermitAnnotations = false;
